@@ -1,7 +1,7 @@
 # Create desktop shortcuts for GitHub Trends (Start / Stop)
 
 $ErrorActionPreference = "Stop"
-$projectDir = "D:\Gitrend"
+$projectDir = if ($PSScriptRoot) { $PSScriptRoot } else { "D:\Gitrend" }
 $desktop = [Environment]::GetFolderPath("Desktop")
 $wsh = New-Object -ComObject WScript.Shell
 
@@ -18,7 +18,10 @@ function New-Shortcut([string]$name, [string]$target, [string]$args, [string]$ic
 
 $icon = Join-Path $projectDir "app\icon.png"
 
-New-Shortcut "GitHub Trends" "D:\Gitrend\GitHub-Trends-Start.bat" "" $icon
-New-Shortcut "GitHub Trends - Stop" "D:\Gitrend\GitHub-Trends-Stop.bat" "" $icon
+$startBat = Join-Path $projectDir "GitHub-Trends-Start.bat"
+$stopBat = Join-Path $projectDir "GitHub-Trends-Stop.bat"
+
+New-Shortcut "GitHub Trends" $startBat "" $icon
+New-Shortcut "GitHub Trends - Stop" $stopBat "" $icon
 
 Write-Output "Done. Use GitHub Trends shortcut on Desktop to start."

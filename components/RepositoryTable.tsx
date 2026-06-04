@@ -10,6 +10,11 @@ import {
   formatRelative,
 } from "@/lib/format";
 import { FavoriteButton } from "./FavoriteButton";
+import { ClampedDescription } from "./ClampedDescription";
+import {
+  getRepositoryDescriptionRu,
+  getRepositoryDescriptionTooltip,
+} from "@/lib/repository-display";
 
 export interface RepoItem extends RepositoryWithGrowth {
   is_favorite: boolean;
@@ -101,7 +106,7 @@ export function RepositoryTable({ items, columns, onFavoriteToggle }: Props) {
           {items.map((item) => (
             <tr
               key={item.github_id}
-              className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70"
+              className="group border-b border-slate-100 last:border-0 hover:bg-slate-50/70"
             >
               {columns.map((col) => (
                 <td
@@ -156,20 +161,17 @@ function Cell({
             >
               {item.full_name}
             </Link>
-            {item.ai_summary && (
-              <div className="mt-0.5 line-clamp-2 max-w-md text-xs text-slate-500">
-                {item.ai_summary}
-              </div>
-            )}
           </div>
         </div>
       );
 
     case "description":
       return (
-        <div className="max-w-md text-slate-600">
-          <span className="line-clamp-2">{item.description || "—"}</span>
-        </div>
+        <ClampedDescription
+          text={getRepositoryDescriptionRu(item)}
+          tooltipText={getRepositoryDescriptionTooltip(item)}
+          maxLines={4}
+        />
       );
 
     case "stars":

@@ -39,3 +39,6 @@ next-env.d.ts
 /_install*.log
 /_build.log
 /data/*.log
+/data/launch.lock
+/data/_run-server.cmd
+/data/server.pid
