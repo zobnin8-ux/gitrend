@@ -148,11 +148,28 @@ lib/repository-display.ts
 lib/data-maturity.ts
 lib/ai.ts
 lib/insights-export.ts
+src/radar/generateWeeklyRadar.ts   JSON для «Радара будущего»
+reports/weekly-radar.json
 launch-app.ps1
 repair-native.ps1
 README.md
 PROJECT_OVERVIEW_FOR_AI.md
 ```
+
+---
+
+## Радар будущего (weekly-radar.json)
+
+GitTrend **не публикует в Telegram**. Раз в неделю — файл `reports/weekly-radar.json` (1–3 GitHub-тренда).
+
+**Raw:** https://raw.githubusercontent.com/zobnin8-ux/gitrend/main/reports/weekly-radar.json
+
+```bash
+npm run radar:weekly
+npm run radar:weekly -- --commit
+```
+
+GitHub Actions: воскресенье 10:00 UTC → refresh → generate → commit.
 
 ---
 

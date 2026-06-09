@@ -114,14 +114,48 @@ try {
     }
 }
 
-function Repair-NativeSqlite {
+function Resolve-NpmCmd([string]$nodeExe) {
+    $nodeDir = Split-Path $nodeExe -Parent
+    $candidates = @(
+        (Join-Path $nodeDir "npm.cmd"),
+        (Join-Path ${env:ProgramFiles} "nodejs\npm.cmd"),
+        (Join-Path ${env:ProgramFiles(x86)} "nodejs\npm.cmd")
+    )
+    foreach ($path in $candidates) {
+        if ($path -and (Test-Path $path)) { return $path }
+    }
+    $fromPath = Get-Command npm.cmd -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty Source -First 1
+    if ($fromPath -and (Test-Path $fromPath)) { return $fromPath }
+
+    throw @"
+npm.cmd not found. Node.js npm is required alongside node.exe.
+
+Install Node.js 22 LTS from https://nodejs.org/
+(or add C:\Program Files\nodejs to PATH).
+"@
+}
+
+function Invoke-NpmLog([string]$npmCmd, [string[]]$npmArgs) {
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = & $npmCmd @npmArgs 2>&1
+        $output | ForEach-Object { Write-Log $_ }
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm $($npmArgs -join ' ') failed (exit $LASTEXITCODE)"
+        }
+    }
+    finally {
+        $ErrorActionPreference = $prevEap
+    }
+}
+
+function Repair-NativeSqlite([string]$npmCmd) {
     Write-Log "Rebuilding better-sqlite3 for current Node..."
     Push-Location $projectDir
     try {
-        & npm.cmd rebuild better-sqlite3 2>&1 | ForEach-Object { Write-Log $_ }
-        if ($LASTEXITCODE -ne 0) {
-            throw "npm rebuild failed (exit $LASTEXITCODE)"
-        }
+        Invoke-NpmLog $npmCmd @("rebuild", "better-sqlite3")
     }
     finally {
         Pop-Location
@@ -234,19 +268,29 @@ if (Test-Path $lockFile) {
 try {
     $nodeExe = Resolve-NodeJs
     $nodeVer = & $nodeExe -v 2>&1
+    $npmCmd = Resolve-NpmCmd $nodeExe
+    $npmDir = Split-Path $npmCmd -Parent
+    $nodeDir = Split-Path $nodeExe -Parent
+    $env:PATH = "$nodeDir;$npmDir;" + (
+        $env:PATH -split ';' | Where-Object { $_ -and ($_ -ne $nodeDir) -and ($_ -ne $npmDir) }
+    ) -join ';'
     Write-Log "Node: $nodeExe ($nodeVer)"
+    Write-Log "npm: $npmCmd"
 
     if (-not (Test-Path (Join-Path $projectDir "node_modules"))) {
         Write-Log "Installing dependencies (npm install)..."
-        & npm.cmd install 2>&1 | ForEach-Object { Write-Log $_ }
-        if ($LASTEXITCODE -ne 0) {
-            throw "npm install failed (exit $LASTEXITCODE)"
+        Push-Location $projectDir
+        try {
+            Invoke-NpmLog $npmCmd @("install")
+        }
+        finally {
+            Pop-Location
         }
     }
 
     if (-not (Test-NativeSqlite $nodeExe)) {
         Write-Log "better-sqlite3 mismatch for $nodeVer - trying rebuild..."
-        Repair-NativeSqlite
+        Repair-NativeSqlite $npmCmd
         if (-not (Test-NativeSqlite $nodeExe)) {
             $other = Get-NodeCandidates | Where-Object { $_ -ne $nodeExe }
             foreach ($alt in $other) {
@@ -283,9 +327,12 @@ Fix (pick one):
 
     if (Test-NeedsBuild) {
         Write-Log "Building (npm run build) - may take 1-2 min..."
-        & npm.cmd run build 2>&1 | ForEach-Object { Write-Log $_ }
-        if ($LASTEXITCODE -ne 0) {
-            throw "Build failed (exit $LASTEXITCODE). See log above."
+        Push-Location $projectDir
+        try {
+            Invoke-NpmLog $npmCmd @("run", "build")
+        }
+        finally {
+            Pop-Location
         }
         Write-Log "BUILD OK"
     }
@@ -297,18 +344,14 @@ Fix (pick one):
     Write-Log "Starting server on port $port..."
 
     $nodeDir = Split-Path $nodeExe -Parent
-    $npmDir = Join-Path ${env:ProgramFiles} "nodejs"
-    if (-not (Test-Path (Join-Path $npmDir "npm.cmd"))) {
-        $npmCmd = Get-Command npm.cmd -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -First 1
-        if ($npmCmd) { $npmDir = Split-Path $npmCmd -Parent }
-    }
     $startBat = Join-Path $dataDir "_run-server.cmd"
+    $npmCmdEsc = $npmCmd -replace '"', '""'
     @"
 @echo off
 title GitHub Trends Server
 cd /d "$projectDir"
 set "PATH=$nodeDir;$npmDir;%PATH%"
-"$npmDir\npm.cmd" run start >> "$serverLog" 2>&1
+"$npmCmdEsc" run start >> "$serverLog" 2>&1
 "@ | Set-Content -Path $startBat -Encoding ASCII
 
     $serverProc = Start-Process -FilePath $startBat -PassThru -WindowStyle Minimized

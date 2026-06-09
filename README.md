@@ -161,6 +161,48 @@ Tools, Open Source и др. (9 запросов, дедупликация по G
 - GitHub Search API: ~30 запросов/мин с токеном; одно обновление ≈ 9 запросов.
 - При `git push` на Windows и ошибке SSL: `git config --global http.sslBackend schannel`
 
+## Еженедельный отчёт «Радар будущего»
+
+GitTrend **не публикует в Telegram** и не знает о канале. Раз в неделю формируется
+файл для внешнего проекта «Радар будущего»:
+
+```txt
+reports/weekly-radar.json
+```
+
+**Raw URL (пример):**  
+`https://raw.githubusercontent.com/zobnin8-ux/gitrend/main/reports/weekly-radar.json`
+
+### Содержимое
+
+1–3 **тренда** (не отдельные репозитории): заголовок, summary, whyTrending,
+категория, signalStrength, список repos. Если достойных трендов нет — `"trends": []`.
+
+### Локально
+
+```bash
+npm run radar:weekly              # сгенерировать JSON из локальной БД
+npm run radar:weekly -- --commit  # + git commit
+npm run radar:weekly -- --refresh --commit --push  # обновить данные + commit + push
+```
+
+### Автоматически (GitHub Actions)
+
+Workflow `.github/workflows/weekly-radar.yml` — **каждое воскресенье 10:00 UTC**:
+обновление данных GitHub → генерация → commit `reports/weekly-radar.json`.
+
+В secrets репозитория нужен `GITHUB_TOKEN` (для Actions создаётся автоматически;
+для Search API достаточно прав public read).
+
+### Модуль
+
+```txt
+src/radar/generateWeeklyRadar.ts  — детекция трендов и запись JSON
+src/radar/commitReport.ts         — git commit
+```
+
+---
+
 ## Документация
 
 - `PROJECT_OVERVIEW_FOR_AI.md` — полный обзор для AI-ассистентов
