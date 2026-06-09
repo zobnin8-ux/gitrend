@@ -1,0 +1,49 @@
+name: Weekly Radar Report
+
+on:
+  schedule:
+    # Воскресенье 10:00 UTC
+    - cron: "0 10 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  weekly-radar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build native modules
+        run: npm rebuild better-sqlite3
+
+      - name: Refresh GitHub data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run radar:refresh
+
+      - name: Generate weekly radar JSON
+        run: npm run radar:weekly
+
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/weekly-radar.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(radar): weekly report $(node -p "require('./reports/weekly-radar.json').week")"
+          git push
