@@ -69,6 +69,21 @@ function Get-NodeCandidates {
     return $list
 }
 
+function Resolve-GitCmd {
+    $cmd = Get-Command git.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($cmd -and $cmd.Source) { return $cmd.Source }
+
+    $candidates = @(
+        (Join-Path ${env:ProgramFiles} "Git\cmd\git.exe"),
+        (Join-Path ${env:ProgramFiles(x86)} "Git\cmd\git.exe"),
+        (Join-Path $env:LOCALAPPDATA "Programs\Git\cmd\git.exe")
+    )
+    foreach ($path in $candidates) {
+        if ($path -and (Test-Path $path)) { return $path }
+    }
+    return $null
+}
+
 function Resolve-NodeJs {
     # Use the first Node where better-sqlite3 already loads (avoids Node 24 mismatch).
     foreach ($candidate in (Get-NodeCandidates)) {
@@ -271,11 +286,17 @@ try {
     $npmCmd = Resolve-NpmCmd $nodeExe
     $npmDir = Split-Path $npmCmd -Parent
     $nodeDir = Split-Path $nodeExe -Parent
-    $env:PATH = "$nodeDir;$npmDir;" + (
-        $env:PATH -split ';' | Where-Object { $_ -and ($_ -ne $nodeDir) -and ($_ -ne $npmDir) }
+    $gitCmd = Resolve-GitCmd
+    $gitDir = if ($gitCmd) { Split-Path $gitCmd -Parent } else { $null }
+    $pathPrefix = if ($gitDir) { "$nodeDir;$npmDir;$gitDir" } else { "$nodeDir;$npmDir" }
+    $env:PATH = "$pathPrefix;" + (
+        $env:PATH -split ';' | Where-Object {
+            $_ -and ($_ -ne $nodeDir) -and ($_ -ne $npmDir) -and ($_ -ne $gitDir)
+        }
     ) -join ';'
     Write-Log "Node: $nodeExe ($nodeVer)"
     Write-Log "npm: $npmCmd"
+    if ($gitCmd) { Write-Log "git: $gitCmd" }
 
     if (-not (Test-Path (Join-Path $projectDir "node_modules"))) {
         Write-Log "Installing dependencies (npm install)..."
@@ -344,13 +365,16 @@ Fix (pick one):
     Write-Log "Starting server on port $port..."
 
     $nodeDir = Split-Path $nodeExe -Parent
+    $gitCmd = Resolve-GitCmd
+    $gitDir = if ($gitCmd) { Split-Path $gitCmd -Parent } else { $null }
+    $pathForServer = if ($gitDir) { "$nodeDir;$npmDir;$gitDir" } else { "$nodeDir;$npmDir" }
     $startBat = Join-Path $dataDir "_run-server.cmd"
     $npmCmdEsc = $npmCmd -replace '"', '""'
     @"
 @echo off
 title GitHub Trends Server
 cd /d "$projectDir"
-set "PATH=$nodeDir;$npmDir;%PATH%"
+set "PATH=$pathForServer;%PATH%"
 "$npmCmdEsc" run start >> "$serverLog" 2>&1
 "@ | Set-Content -Path $startBat -Encoding ASCII
 
