@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { gitEnv, resolveGitExecutable } from "@/lib/resolve-git";
 import type { WeeklyRadarReport } from "./types";
 import { weeklyRadarReportPath } from "./generateWeeklyRadar";
 
@@ -18,14 +19,21 @@ export interface CommitWeeklyRadarResult {
 }
 
 function runGit(cwd: string, args: string[]): string {
+  const git = resolveGitExecutable();
   try {
-    return execFileSync("git", args, {
+    return execFileSync(git, args, {
       cwd,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
+      env: gitEnv(),
     }).trim();
   } catch (err) {
-    const e = err as { stderr?: string; message?: string };
+    const e = err as { stderr?: string; message?: string; code?: string };
+    if (e.code === "ENOENT") {
+      throw new Error(
+        "Git не найден. Перезапустите приложение из терминала с Git в PATH или задайте GIT_EXECUTABLE в .env.local."
+      );
+    }
     const detail = e.stderr?.trim() || e.message || "git command failed";
     throw new Error(detail);
   }
