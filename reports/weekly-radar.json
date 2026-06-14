@@ -1,10 +1,10 @@
 {
   "week": "2026-W24",
-  "generatedAt": "2026-06-14T17:49:59.776Z",
+  "generatedAt": "2026-06-14T18:03:59.248Z",
   "trends": [
     {
       "title": "Рост AI-агентов для разработки",
-      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +32757 stars).",
+      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +32777 stars).",
       "whyTrending": "Рост распределён между несколькими проектами (hermes-agent, superpowers, cc-switch, agency-agents), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
       "category": "ai-agents",
       "signalStrength": "high",
@@ -12,38 +12,38 @@
         {
           "name": "hermes-agent",
           "url": "https://github.com/NousResearch/hermes-agent",
-          "stars": 193365,
-          "starsDelta": 8461
+          "stars": 193374,
+          "starsDelta": 8470
         },
         {
           "name": "superpowers",
           "url": "https://github.com/obra/superpowers",
-          "stars": 227664,
-          "starsDelta": 7896
+          "stars": 227670,
+          "starsDelta": 7902
         },
         {
           "name": "cc-switch",
           "url": "https://github.com/farion1231/cc-switch",
-          "stars": 100587,
-          "starsDelta": 7038
+          "stars": 100588,
+          "starsDelta": 7039
         },
         {
           "name": "agency-agents",
           "url": "https://github.com/msitarzewski/agency-agents",
-          "stars": 113112,
-          "starsDelta": 5146
+          "stars": 113115,
+          "starsDelta": 5149
         },
         {
           "name": "career-ops",
           "url": "https://github.com/santifer/career-ops",
-          "stars": 53686,
-          "starsDelta": 4216
+          "stars": 53687,
+          "starsDelta": 4217
         }
       ]
     },
     {
       "title": "Ускорение проектов вокруг LLM",
-      "summary": "Сразу 5 независимых репозиториев в категории «LLM и языковые модели» показали заметный недельный рост (суммарно +10817 stars).",
+      "summary": "Сразу 5 независимых репозиториев в категории «LLM и языковые модели» показали заметный недельный рост (суммарно +10825 stars).",
       "whyTrending": "Рост распределён между несколькими проектами (MoneyPrinterTurbo, caveman, UniRL, GordenSuperPPTSkills), что указывает на интерес сообщества к направлению «LLM и языковые модели», а не к одному вирусному репозиторию.",
       "category": "llm",
       "signalStrength": "high",
@@ -51,14 +51,14 @@
         {
           "name": "MoneyPrinterTurbo",
           "url": "https://github.com/harry0703/MoneyPrinterTurbo",
-          "stars": 87717,
-          "starsDelta": 7129
+          "stars": 87722,
+          "starsDelta": 7134
         },
         {
           "name": "caveman",
           "url": "https://github.com/JuliusBrussee/caveman",
-          "stars": 72412,
-          "starsDelta": 2845
+          "stars": 72415,
+          "starsDelta": 2848
         },
         {
           "name": "UniRL",
@@ -82,7 +82,7 @@
     },
     {
       "title": "Синхронный рост проектов: инструменты разработки",
-      "summary": "Сразу 4 независимых репозиториев в категории «инструменты разработки» показали заметный недельный рост (суммарно +2830 stars).",
+      "summary": "Сразу 4 независимых репозиториев в категории «инструменты разработки» показали заметный недельный рост (суммарно +2834 stars).",
       "whyTrending": "Рост распределён между несколькими проектами (Void-Tools-v2.0, chinese-buy-us-stock-guide, xiaohu-video-translate, ideogram4), что указывает на интерес сообщества к направлению «инструменты разработки», а не к одному вирусному репозиторию.",
       "category": "developer-tools",
       "signalStrength": "high",
@@ -90,8 +90,8 @@
         {
           "name": "Void-Tools-v2.0",
           "url": "https://github.com/V0id-v2/Void-Tools-v2.0",
-          "stars": 2136,
-          "starsDelta": 1549
+          "stars": 2140,
+          "starsDelta": 1553
         },
         {
           "name": "chinese-buy-us-stock-guide",
