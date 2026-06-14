@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import type { WeeklyRadarReport } from "./types";
@@ -10,12 +10,25 @@ export interface CommitWeeklyRadarOptions {
   push?: boolean;
 }
 
-function runGit(cwd: string, args: string): void {
-  execSync(`git ${args}`, { cwd, stdio: "inherit", encoding: "utf8" });
+export interface CommitWeeklyRadarResult {
+  committed: boolean;
+  pushed: boolean;
+  filePath: string;
+  message: string;
 }
 
-function gitOutput(cwd: string, args: string): string {
-  return execSync(`git ${args}`, { cwd, encoding: "utf8" }).trim();
+function runGit(cwd: string, args: string[]): string {
+  try {
+    return execFileSync("git", args, {
+      cwd,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    }).trim();
+  } catch (err) {
+    const e = err as { stderr?: string; message?: string };
+    const detail = e.stderr?.trim() || e.message || "git command failed";
+    throw new Error(detail);
+  }
 }
 
 /**
@@ -23,7 +36,7 @@ function gitOutput(cwd: string, args: string): string {
  */
 export function commitWeeklyRadarReport(
   options: CommitWeeklyRadarOptions = {}
-): { committed: boolean; filePath: string } {
+): CommitWeeklyRadarResult {
   const root = options.projectRoot ?? process.cwd();
   const filePath = weeklyRadarReportPath(root);
   const relPath = path.relative(root, filePath).replace(/\\/g, "/");
@@ -36,12 +49,16 @@ export function commitWeeklyRadarReport(
     throw new Error("Not a git repository — cannot commit weekly radar report.");
   }
 
-  runGit(root, `add "${relPath}"`);
+  runGit(root, ["add", relPath]);
 
-  const status = gitOutput(root, `status --porcelain -- "${relPath}"`);
+  const status = runGit(root, ["status", "--porcelain", "--", relPath]);
   if (!status) {
-    console.log("weekly-radar.json unchanged — skip commit.");
-    return { committed: false, filePath };
+    return {
+      committed: false,
+      pushed: false,
+      filePath,
+      message: "Файл не изменился — новый commit не нужен.",
+    };
   }
 
   const week =
@@ -49,14 +66,20 @@ export function commitWeeklyRadarReport(
     JSON.parse(fs.readFileSync(filePath, "utf8")).week ??
     "unknown";
 
-  runGit(
-    root,
-    `commit -m "chore(radar): weekly report ${week}"`
-  );
+  runGit(root, ["commit", "-m", `chore(radar): weekly report ${week}`]);
 
+  let pushed = false;
   if (options.push) {
-    runGit(root, "push origin HEAD");
+    runGit(root, ["push", "origin", "HEAD"]);
+    pushed = true;
   }
 
-  return { committed: true, filePath };
+  return {
+    committed: true,
+    pushed,
+    filePath,
+    message: pushed
+      ? `Опубликовано на GitHub (неделя ${week}).`
+      : `Commit создан (неделя ${week}).`,
+  };
 }

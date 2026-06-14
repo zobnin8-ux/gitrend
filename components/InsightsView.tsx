@@ -64,6 +64,17 @@ interface RadarApiResponse {
   error?: string;
 }
 
+interface RadarPublishApiResponse {
+  ok: boolean;
+  report?: WeeklyRadarReport | null;
+  trendsCount?: number;
+  committed?: boolean;
+  pushed?: boolean;
+  message?: string;
+  rawUrl?: string;
+  error?: string;
+}
+
 function visualFor(
   map: Record<string, VisualBadge>,
   key: string
@@ -89,10 +100,14 @@ export function InsightsView({
   const [dataMaturity, setDataMaturity] =
     useState<DataMaturity>(initialDataMaturity);
   const [radarLoading, setRadarLoading] = useState(false);
+  const [radarPublishing, setRadarPublishing] = useState(false);
   const [radarReport, setRadarReport] = useState<WeeklyRadarReport | null>(
     null
   );
   const [radarError, setRadarError] = useState<string | null>(null);
+  const [radarPublishMessage, setRadarPublishMessage] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     void fetch("/api/radar/weekly")
@@ -228,6 +243,42 @@ export function InsightsView({
     );
   }
 
+  async function publishRadar() {
+    setRadarPublishing(true);
+    setRadarError(null);
+    setRadarPublishMessage(null);
+
+    try {
+      const res = await fetch("/api/radar/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ regenerate: true }),
+      });
+      const data = (await res.json()) as RadarPublishApiResponse;
+      if (!data.ok) {
+        setRadarError(data.error ?? "Не удалось опубликовать на GitHub");
+        return;
+      }
+      if (data.report) {
+        setRadarReport(data.report);
+      }
+      setRadarPublishMessage(
+        data.message ??
+          (data.pushed
+            ? "Файл отправлен на GitHub."
+            : "Изменений для публикации не было.")
+      );
+    } catch (err) {
+      setRadarError(
+        err instanceof Error ? err.message : "Сетевая ошибка при публикации"
+      );
+    } finally {
+      setRadarPublishing(false);
+    }
+  }
+
+  const radarBusy = radarLoading || radarPublishing;
+
   return (
     <div className="space-y-6">
       <DataMaturityBlock maturity={dataMaturity} />
@@ -334,7 +385,7 @@ export function InsightsView({
             <button
               type="button"
               onClick={() => generateRadar(false)}
-              disabled={radarLoading}
+              disabled={radarBusy}
               className="btn-primary"
             >
               {radarLoading ? "Генерация…" : "Сформировать Radar JSON"}
@@ -342,16 +393,27 @@ export function InsightsView({
             <button
               type="button"
               onClick={() => generateRadar(true)}
-              disabled={radarLoading}
+              disabled={radarBusy}
               className="btn-ghost"
             >
               {radarLoading ? "Обновление…" : "Обновить GitHub + Radar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => publishRadar()}
+              disabled={radarBusy}
+              className="btn-ghost"
+              title="Сформировать JSON, commit + push в GitHub для Радара будущего"
+            >
+              {radarPublishing
+                ? "Публикация…"
+                : "Опубликовать на GitHub"}
             </button>
             {radarReport && (
               <button
                 type="button"
                 onClick={downloadRadarJson}
-                disabled={radarLoading}
+                disabled={radarBusy}
                 className="btn-ghost"
               >
                 Скачать JSON
@@ -372,6 +434,11 @@ export function InsightsView({
                 «Обновить GitHub + Radar».
               </p>
             )}
+          </div>
+        )}
+        {radarPublishMessage && (
+          <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+            {radarPublishMessage}
           </div>
         )}
       </div>
