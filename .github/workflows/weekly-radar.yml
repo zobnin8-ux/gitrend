@@ -2,8 +2,8 @@ name: Weekly Radar Report
 
 on:
   schedule:
-    # Воскресенье 10:00 UTC
-    - cron: "0 10 * * 0"
+    # Суббота 18:00 UTC = 21:00 МСК — файл готов к воскресенью утром для Радара
+    - cron: "0 18 * * 6"
   workflow_dispatch:
 
 permissions:

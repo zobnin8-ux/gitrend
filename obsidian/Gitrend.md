@@ -153,7 +153,7 @@ lib/insights-export.ts
 lib/insights-export.ts
 src/radar/                         Модуль weekly radar
 reports/weekly-radar.json          Публикуемый JSON
-.github/workflows/weekly-radar.yml Cron: вс 10:00 UTC
+.github/workflows/weekly-radar.yml Cron: сб 18:00 UTC (21:00 МСК)
 docs/RADAR-FUTURE-INTEGRATION-TZ.md  ТЗ для «Радара будущего»
 launch-app.ps1
 repair-native.ps1
@@ -186,7 +186,7 @@ https://raw.githubusercontent.com/zobnin8-ux/gitrend/main/reports/weekly-radar.j
 ### Расписание GitTrend
 
 - **GitHub Actions:** `.github/workflows/weekly-radar.yml`
-- **Когда:** воскресенье **10:00 UTC**
+- **Когда:** суббота **18:00 UTC** (21:00 МСК) — к воскресенью утром JSON на GitHub
 - **Шаги:** refresh GitHub → `npm run radar:weekly` → commit + push JSON
 
 ### Локальные команды

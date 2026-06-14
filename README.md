@@ -188,8 +188,9 @@ npm run radar:weekly -- --refresh --commit --push  # обновить данны
 
 ### Автоматически (GitHub Actions)
 
-Workflow `.github/workflows/weekly-radar.yml` — **каждое воскресенье 10:00 UTC**:
+Workflow `.github/workflows/weekly-radar.yml` — **каждую субботу 18:00 UTC (21:00 МСК)**:
 обновление данных GitHub → генерация → commit `reports/weekly-radar.json`.
+Файл готов к воскресенью утром для проекта «Радар будущего».
 
 В secrets репозитория нужен `GITHUB_TOKEN` (для Actions создаётся автоматически;
 для Search API достаточно прав public read).

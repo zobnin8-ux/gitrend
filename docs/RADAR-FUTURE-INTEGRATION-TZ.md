@@ -42,7 +42,7 @@ GET https://api.github.com/repos/zobnin8-ux/gitrend/contents/reports/weekly-rada
 ### 2.2. Расписание обновления GitTrend
 
 - **GitHub Actions:** `.github/workflows/weekly-radar.yml`
-- **Cron:** воскресенье, **10:00 UTC**
+- **Cron:** суббота, **18:00 UTC** (21:00 МСК) — чтобы к воскресенью утром JSON уже был на GitHub
 - **Шаги:** `npm run radar:refresh` → `npm run radar:weekly` → commit + push `weekly-radar.json`
 - **Локально:** `npm run radar:weekly`, `npm run radar:weekly -- --commit --push`
 
@@ -208,7 +208,7 @@ async function fetchWeeklyRadar(): Promise<WeeklyRadarReport> {
 **Рекомендации:**
 
 - Сохранять `ETag` / `Last-Modified` или хеш файла — не обрабатывать дважды одну неделю.
-- Retry 3× с backoff (GitHub Actions GitTrend может закончить на несколько минут позже 10:00 UTC).
+- Retry 3× с backoff (GitHub Actions GitTrend может закончить на несколько минут позже 18:00 UTC в субботу).
 
 ---
 
@@ -338,12 +338,12 @@ await bot.sendMessage(TELEGRAM_CHANNEL_ID, text, {
 
 ### 4.9. Расписание (GitHub Actions Радара будущего)
 
-Запуск **после** GitTrend (буфер 30–60 мин):
+Запуск **воскресенье утром** (после публикации GitTrend в субботу вечером):
 
 ```yaml
 on:
   schedule:
-    - cron: "30 11 * * 0"   # воскресенье 11:30 UTC
+    - cron: "0 7 * * 0"   # воскресенье 07:00 UTC = 10:00 МСК
   workflow_dispatch:
 ```
 
@@ -391,8 +391,8 @@ sequenceDiagram
   participant OAI as OpenAI
   participant TG as Telegram канал
 
-  GT->>GH: commit weekly-radar.json (вс 10:00 UTC)
-  RF->>GH: GET weekly-radar.json (вс 11:30 UTC)
+  GT->>GH: commit weekly-radar.json (сб 18:00 UTC / 21:00 МСК)
+  RF->>GH: GET weekly-radar.json (вс 07:00 UTC / 10:00 МСК)
   RF->>RF: validate + select trends
   loop каждый тренд
     RF->>OAI: enrichTrend (уровень, futureWhy)
