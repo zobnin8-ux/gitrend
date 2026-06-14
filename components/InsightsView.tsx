@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { DataMaturity, InsightPeriod, TrendInsights } from "@/lib/types";
+import type { WeeklyRadarReport } from "@/src/radar/types";
 import { isLowDataMaturity } from "@/lib/data-maturity-utils";
 import { formatDateTime } from "@/lib/format";
 import {
@@ -54,6 +55,15 @@ interface ApiResponse {
   error?: string;
 }
 
+interface RadarApiResponse {
+  ok: boolean;
+  exists?: boolean;
+  report?: WeeklyRadarReport | null;
+  trendsCount?: number;
+  filePath?: string;
+  error?: string;
+}
+
 function visualFor(
   map: Record<string, VisualBadge>,
   key: string
@@ -78,6 +88,24 @@ export function InsightsView({
   const [tab, setTab] = useState<ContentTab>("linkedin");
   const [dataMaturity, setDataMaturity] =
     useState<DataMaturity>(initialDataMaturity);
+  const [radarLoading, setRadarLoading] = useState(false);
+  const [radarReport, setRadarReport] = useState<WeeklyRadarReport | null>(
+    null
+  );
+  const [radarError, setRadarError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetch("/api/radar/weekly")
+      .then((res) => res.json())
+      .then((data: RadarApiResponse) => {
+        if (data.ok && data.report) {
+          setRadarReport(data.report);
+        }
+      })
+      .catch(() => {
+        // статус файла необязателен при загрузке страницы
+      });
+  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -162,6 +190,40 @@ export function InsightsView({
     downloadTextFile(
       trendInsightsToExportJson(report, dataMaturity),
       `${base}.json`,
+      "application/json;charset=utf-8"
+    );
+  }
+
+  async function generateRadar(refresh: boolean) {
+    setRadarLoading(true);
+    setRadarError(null);
+
+    try {
+      const res = await fetch("/api/radar/weekly", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh }),
+      });
+      const data = (await res.json()) as RadarApiResponse;
+      if (!data.ok || !data.report) {
+        setRadarError(data.error ?? "Не удалось сформировать Radar JSON");
+        return;
+      }
+      setRadarReport(data.report);
+    } catch (err) {
+      setRadarError(
+        err instanceof Error ? err.message : "Сетевая ошибка при Radar JSON"
+      );
+    } finally {
+      setRadarLoading(false);
+    }
+  }
+
+  function downloadRadarJson() {
+    if (!radarReport) return;
+    downloadTextFile(
+      JSON.stringify(radarReport, null, 2) + "\n",
+      "weekly-radar.json",
       "application/json;charset=utf-8"
     );
   }
@@ -256,6 +318,69 @@ export function InsightsView({
           </div>
         )}
       </div>
+
+      <div className="card p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-slate-700">
+              Радар будущего (JSON)
+            </p>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Файл <code>reports/weekly-radar.json</code> для внешнего проекта —
+              без OpenAI, только GitHub-тренды из локальной базы.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => generateRadar(false)}
+              disabled={radarLoading}
+              className="btn-primary"
+            >
+              {radarLoading ? "Генерация…" : "Сформировать Radar JSON"}
+            </button>
+            <button
+              type="button"
+              onClick={() => generateRadar(true)}
+              disabled={radarLoading}
+              className="btn-ghost"
+            >
+              {radarLoading ? "Обновление…" : "Обновить GitHub + Radar"}
+            </button>
+            {radarReport && (
+              <button
+                type="button"
+                onClick={downloadRadarJson}
+                disabled={radarLoading}
+                className="btn-ghost"
+              >
+                Скачать JSON
+              </button>
+            )}
+          </div>
+        </div>
+        {radarReport && (
+          <div className="mt-3 text-xs text-slate-400">
+            <span>
+              Неделя {radarReport.week} · трендов: {radarReport.trends.length}{" "}
+              · обновлён: {formatDateTime(radarReport.generatedAt)}
+            </span>
+            {radarReport.trends.length === 0 && (
+              <p className="mt-2 text-amber-700">
+                Трендов 0 — нужна история снапшотов минимум за 2 дня и рост
+                звёзд за неделю. Обновляйте данные несколько дней или нажмите
+                «Обновить GitHub + Radar».
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {radarError && (
+        <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {radarError}
+        </div>
+      )}
 
       {noKey && (
         <div className="card border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">

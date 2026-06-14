@@ -10,10 +10,12 @@ aliases:
   - Gitrend
   - GitHub Тренды
 created: 2026-06-03
-updated: 2026-06-04
+updated: 2026-06-09
 status: active
 repo: https://github.com/zobnin8-ux/gitrend
 local_path: D:\Gitrend
+related:
+  - "[[Радар будущего]]"
 ---
 
 # Gitrend — GitHub Trends Tracker
@@ -148,8 +150,11 @@ lib/repository-display.ts
 lib/data-maturity.ts
 lib/ai.ts
 lib/insights-export.ts
-src/radar/generateWeeklyRadar.ts   JSON для «Радара будущего»
-reports/weekly-radar.json
+lib/insights-export.ts
+src/radar/                         Модуль weekly radar
+reports/weekly-radar.json          Публикуемый JSON
+.github/workflows/weekly-radar.yml Cron: вс 10:00 UTC
+docs/RADAR-FUTURE-INTEGRATION-TZ.md  ТЗ для «Радара будущего»
 launch-app.ps1
 repair-native.ps1
 README.md
@@ -158,18 +163,91 @@ PROJECT_OVERVIEW_FOR_AI.md
 
 ---
 
-## Радар будущего (weekly-radar.json)
+## Радар будущего — интеграция
 
-GitTrend **не публикует в Telegram**. Раз в неделю — файл `reports/weekly-radar.json` (1–3 GitHub-тренда).
+> GitTrend **не знает о Telegram** и **не публикует** в канал. Только еженедельный JSON с GitHub-трендами.
 
-**Raw:** https://raw.githubusercontent.com/zobnin8-ux/gitrend/main/reports/weekly-radar.json
+### Разделение ответственности
 
-```bash
-npm run radar:weekly
-npm run radar:weekly -- --commit
+| Система | Вопрос |
+|---------|--------|
+| **GitTrend** | Что быстро растёт среди разработчиков на GitHub? |
+| **[[Радар будущего]]** | Почему это важно для будущего? Публиковать? Какой уровень? Пост в Telegram |
+
+### Файл и Raw URL
+
+```text
+reports/weekly-radar.json
 ```
 
-GitHub Actions: воскресенье 10:00 UTC → refresh → generate → commit.
+**Raw (точка интеграции для Радара):**  
+https://raw.githubusercontent.com/zobnin8-ux/gitrend/main/reports/weekly-radar.json
+
+### Расписание GitTrend
+
+- **GitHub Actions:** `.github/workflows/weekly-radar.yml`
+- **Когда:** воскресенье **10:00 UTC**
+- **Шаги:** refresh GitHub → `npm run radar:weekly` → commit + push JSON
+
+### Локальные команды
+
+```bash
+npm run radar:weekly                      # генерация из локальной БД
+npm run radar:weekly -- --commit          # + git commit
+npm run radar:weekly -- --refresh --commit --push
+npm run radar:refresh                     # только обновить данные GitHub
+```
+
+### Что внутри отчёта
+
+- **1–3 тренда** (не отдельные репо, не топ по звёздам)
+- Если достойных нет → `"trends": []` (норма)
+- Поля тренда: `title`, `summary`, `whyTrending`, `category`, `signalStrength`, `repos[]`
+
+**Категории:** `ai-agents`, `developer-tools`, `mcp`, `automation`, `robotics`, `computer-vision`, `voice-ai`, `llm`, `infrastructure`, `security`, `data`, `productivity`
+
+**Пример:**
+
+```json
+{
+  "week": "2026-W24",
+  "generatedAt": "2026-06-09T20:52:29.515Z",
+  "trends": [{
+    "title": "Рост AI-агентов для разработки",
+    "category": "ai-agents",
+    "signalStrength": "high",
+    "repos": [{ "name": "…", "url": "…", "stars": 0, "starsDelta": 0 }]
+  }]
+}
+```
+
+### Критерии отбора (GitTrend)
+
+- ≥2 репозитория в одной категории
+- устойчивый недельный рост + история снапшотов
+- активность (`pushed_at` ≤ 14 дней)
+- рост не сосредоточен в одном репо (≤72%)
+- категория `other` не включается
+
+### Что делает «Радар будущего» (отдельный проект)
+
+1. `GET` Raw URL (лучше **вс 11:30 UTC**, буфер после GitTrend)
+2. Валидация JSON
+3. OpenAI: уровень радара, «почему важно для будущего»
+4. Пост в Telegram через Bot API
+5. State: не публиковать одну `week` дважды
+
+**Env Радара (не GitTrend):**
+
+```env
+TELEGRAM_BOT_TOKEN=…
+TELEGRAM_CHANNEL_ID=@…
+GITTREND_RADAR_URL=https://raw.githubusercontent.com/zobnin8-ux/gitrend/main/reports/weekly-radar.json
+OPENAI_API_KEY=…
+```
+
+> [!info] Полное ТЗ
+> `docs/RADAR-FUTURE-INTEGRATION-TZ.md` — модули, cron, критерии приёмки, mermaid-схема.
 
 ---
 
@@ -181,11 +259,14 @@ GitHub Actions: воскресенье 10:00 UTC → refresh → generate → co
 - [ ] `/insights` формирует отчёт
 - [ ] Зрелость данных растёт со снапшотами
 - [ ] Start.bat открывает браузер
+- [ ] Raw URL `weekly-radar.json` открывается в браузере
+- [ ] GitHub Actions **Weekly Radar Report** — зелёный (после вс)
 
 ---
 
 ## Связанные заметки
 
+- [[Радар будущего]]
 - [[ZobninAI — контент]]
 - [[GitHub PAT]]
 - [[OpenAI API]]

@@ -28,6 +28,17 @@ jobs:
       - name: Build native modules
         run: npm rebuild better-sqlite3
 
+      - name: Restore SQLite database
+        uses: actions/cache@v4
+        with:
+          path: data/github-trends.db
+          key: radar-db-${{ github.repository }}
+          restore-keys: |
+            radar-db-
+
+      - name: Ensure data directory
+        run: mkdir -p data
+
       - name: Refresh GitHub data
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
