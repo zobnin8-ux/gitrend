@@ -1,5 +1,10 @@
 # GitHub Trends - reliable launcher (ASCII-only for Windows PowerShell)
 # Fixes: wrong Node on PATH, native module mismatch, silent failures, double-click races.
+# Usage: launch-app.ps1 [-Silent]  — Silent = no console, hidden server, auto-shutdown on tab close
+
+param(
+    [switch]$Silent
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -24,15 +29,19 @@ if (-not (Test-Path $dataDir)) {
 function Write-Log([string]$text) {
     $line = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') $text"
     Add-Content -Path $logFile -Value $line -Encoding UTF8
-    Write-Host $line
+    if (-not $Silent) {
+        Write-Host $line
+    }
 }
 
 function Show-Error([string]$title, [string]$message) {
     Write-Log "ERROR: $title - $message"
-    Write-Host ""
-    Write-Host "ERROR: $title" -ForegroundColor Red
-    Write-Host $message -ForegroundColor Red
-    Write-Host "Log: $logFile" -ForegroundColor Yellow
+    if (-not $Silent) {
+        Write-Host ""
+        Write-Host "ERROR: $title" -ForegroundColor Red
+        Write-Host $message -ForegroundColor Red
+        Write-Host "Log: $logFile" -ForegroundColor Yellow
+    }
     try {
         Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue
         [System.Windows.Forms.MessageBox]::Show(
@@ -368,9 +377,36 @@ Fix (pick one):
     $gitCmd = Resolve-GitCmd
     $gitDir = if ($gitCmd) { Split-Path $gitCmd -Parent } else { $null }
     $pathForServer = if ($gitDir) { "$nodeDir;$npmDir;$gitDir" } else { "$nodeDir;$npmDir" }
-    $startBat = Join-Path $dataDir "_run-server.cmd"
-    $npmCmdEsc = $npmCmd -replace '"', '""'
-    @"
+
+    if ($Silent) {
+        $startBat = Join-Path $dataDir "_run-server.cmd"
+        $npmCmdEsc = $npmCmd -replace '"', '""'
+        @"
+@echo off
+cd /d "$projectDir"
+set "PATH=$pathForServer;%PATH%"
+set "GITREND_AUTO_SHUTDOWN=1"
+"$npmCmdEsc" run start >> "$serverLog" 2>&1
+"@ | Set-Content -Path $startBat -Encoding ASCII
+
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = $env:ComSpec
+        $psi.Arguments = "/c `"`"$startBat`"`""
+        $psi.WorkingDirectory = $projectDir
+        $psi.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
+        $psi.CreateNoWindow = $true
+        $psi.UseShellExecute = $false
+
+        $serverProc = [System.Diagnostics.Process]::Start($psi)
+        if ($serverProc) {
+            $serverProc.Id | Set-Content -Path $pidFile -Encoding ASCII
+            Write-Log "Server PID $($serverProc.Id) (hidden, auto-shutdown enabled)"
+        }
+    }
+    else {
+        $startBat = Join-Path $dataDir "_run-server.cmd"
+        $npmCmdEsc = $npmCmd -replace '"', '""'
+        @"
 @echo off
 title GitHub Trends Server
 cd /d "$projectDir"
@@ -378,10 +414,11 @@ set "PATH=$pathForServer;%PATH%"
 "$npmCmdEsc" run start >> "$serverLog" 2>&1
 "@ | Set-Content -Path $startBat -Encoding ASCII
 
-    $serverProc = Start-Process -FilePath $startBat -PassThru -WindowStyle Minimized
-    if ($serverProc) {
-        $serverProc.Id | Set-Content -Path $pidFile -Encoding ASCII
-        Write-Log "Server PID $($serverProc.Id) (minimized window: GitHub Trends Server)"
+        $serverProc = Start-Process -FilePath $startBat -PassThru -WindowStyle Minimized
+        if ($serverProc) {
+            $serverProc.Id | Set-Content -Path $pidFile -Encoding ASCII
+            Write-Log "Server PID $($serverProc.Id) (minimized window: GitHub Trends Server)"
+        }
     }
 
     Write-Log "Waiting for $url (up to 90 sec)..."

@@ -69,12 +69,20 @@ OPENAI_API_KEY=          # для русских описаний и AI-инса
 
 Токен GitHub: https://github.com/settings/tokens
 
-3. **Windows (рекомендуется):** двойной клик по `GitHub-Trends-Start.bat`
+3. **Windows (рекомендуется):** один раз собрать launcher и ярлык:
 
-   - автоматическая сборка при изменении кода;
-   - запуск сервера и открытие браузера;
-   - остановка: `GitHub-Trends-Stop.bat`;
-   - починка SQLite после смены Node: `GitHub-Trends-Repair.bat`.
+```bash
+npm run launcher:setup
+```
+
+Дальше — двойной клик по **`Gitrend.lnk`** в корне проекта (как `Jarvis.lnk` в Jarvis):
+
+- без окна терминала;
+- автоматическая сборка при изменении кода;
+- браузер открывается сам;
+- при закрытии последней вкладки сервер останавливается.
+
+Починка SQLite после смены Node: `npm run rebuild:native` или `repair-native.ps1`.
 
 4. **Разработка:**
 
@@ -91,7 +99,7 @@ npm run dev
 > истории). Обновляйте данные периодически (лучше раз в день).
 
 > **Node.js на Windows.** Если приложение не стартует после обновления Node,
-> запустите `GitHub-Trends-Repair.bat`. Лаунчер выбирает совместимую версию Node
+> выполните `npm run rebuild:native`. Launcher подбирает совместимую версию Node
 > и пересобирает `better-sqlite3` при необходимости.
 
 ## Сборка production-версии
@@ -132,8 +140,9 @@ npm run start
 /data
   github-trends.db      Локальная БД (в .gitignore)
 
-GitHub-Trends-Start.bat / Stop.bat / Repair.bat
-launch-app.ps1          Лаунчер Windows
+launch-app.ps1          Лаунчер Windows (вызывается из Gitrend.exe)
+Gitrend.lnk             Ярлык запуска (npm run launcher:setup)
+launcher/               exe + vbs
 obsidian/Gitrend.md     Заметка для Obsidian
 ```
 

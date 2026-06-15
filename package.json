@@ -13,7 +13,10 @@
     "radar:refresh": "tsx scripts/radar-refresh.ts",
     "radar:weekly": "tsx scripts/weekly-radar.ts",
     "radar:weekly:commit": "tsx scripts/weekly-radar.ts --commit",
-    "radar:weekly:publish": "tsx scripts/weekly-radar.ts --refresh --commit --push"
+    "radar:weekly:publish": "tsx scripts/weekly-radar.ts --refresh --commit --push",
+    "launcher:build": "powershell -NoProfile -ExecutionPolicy Bypass -File launcher/build-exe.ps1",
+    "launcher:shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File launcher/create-shortcut.ps1",
+    "launcher:setup": "npm run launcher:build && npm run launcher:shortcut"
   },
   "engines": {
     "node": ">=20 <=22"

@@ -42,3 +42,6 @@ next-env.d.ts
 /data/launch.lock
 /data/_run-server.cmd
 /data/server.pid
+
+# launcher binary (build locally)
+/launcher/Gitrend.exe
