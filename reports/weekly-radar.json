@@ -1,64 +1,64 @@
 {
-  "week": "2026-W24",
-  "generatedAt": "2026-06-14T18:03:59.248Z",
+  "week": "2026-W25",
+  "generatedAt": "2026-06-15T22:47:32.517Z",
   "trends": [
     {
       "title": "Рост AI-агентов для разработки",
-      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +32777 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (hermes-agent, superpowers, cc-switch, agency-agents), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
+      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +43305 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (ponytail, superpowers, hermes-agent, cc-switch), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
       "category": "ai-agents",
       "signalStrength": "high",
       "repos": [
         {
-          "name": "hermes-agent",
-          "url": "https://github.com/NousResearch/hermes-agent",
-          "stars": 193374,
-          "starsDelta": 8470
+          "name": "ponytail",
+          "url": "https://github.com/DietrichGebert/ponytail",
+          "stars": 15959,
+          "starsDelta": 15212
         },
         {
           "name": "superpowers",
           "url": "https://github.com/obra/superpowers",
-          "stars": 227670,
-          "starsDelta": 7902
+          "stars": 228744,
+          "starsDelta": 7923
+        },
+        {
+          "name": "hermes-agent",
+          "url": "https://github.com/NousResearch/hermes-agent",
+          "stars": 194404,
+          "starsDelta": 7911
         },
         {
           "name": "cc-switch",
           "url": "https://github.com/farion1231/cc-switch",
-          "stars": 100588,
-          "starsDelta": 7039
+          "stars": 101629,
+          "starsDelta": 6969
         },
         {
           "name": "agency-agents",
           "url": "https://github.com/msitarzewski/agency-agents",
-          "stars": 113115,
-          "starsDelta": 5149
-        },
-        {
-          "name": "career-ops",
-          "url": "https://github.com/santifer/career-ops",
-          "stars": 53687,
-          "starsDelta": 4217
+          "stars": 113484,
+          "starsDelta": 5290
         }
       ]
     },
     {
       "title": "Ускорение проектов вокруг LLM",
-      "summary": "Сразу 5 независимых репозиториев в категории «LLM и языковые модели» показали заметный недельный рост (суммарно +10825 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (MoneyPrinterTurbo, caveman, UniRL, GordenSuperPPTSkills), что указывает на интерес сообщества к направлению «LLM и языковые модели», а не к одному вирусному репозиторию.",
+      "summary": "Сразу 5 независимых репозиториев в категории «LLM и языковые модели» показали заметный недельный рост (суммарно +10821 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (MoneyPrinterTurbo, caveman, UniRL, text-humanizer), что указывает на интерес сообщества к направлению «LLM и языковые модели», а не к одному вирусному репозиторию.",
       "category": "llm",
       "signalStrength": "high",
       "repos": [
         {
           "name": "MoneyPrinterTurbo",
           "url": "https://github.com/harry0703/MoneyPrinterTurbo",
-          "stars": 87722,
-          "starsDelta": 7134
+          "stars": 88265,
+          "starsDelta": 6729
         },
         {
           "name": "caveman",
           "url": "https://github.com/JuliusBrussee/caveman",
-          "stars": 72415,
-          "starsDelta": 2848
+          "stars": 72996,
+          "starsDelta": 3093
         },
         {
           "name": "UniRL",
@@ -67,37 +67,43 @@
           "starsDelta": 344
         },
         {
+          "name": "text-humanizer",
+          "url": "https://github.com/khrisat/text-humanizer",
+          "stars": 672,
+          "starsDelta": 334
+        },
+        {
           "name": "GordenSuperPPTSkills",
           "url": "https://github.com/GordenSun/GordenSuperPPTSkills",
           "stars": 885,
           "starsDelta": 321
-        },
-        {
-          "name": "gpt-pp",
-          "url": "https://github.com/jmmy9609-design/gpt-pp",
-          "stars": 395,
-          "starsDelta": 178
         }
       ]
     },
     {
       "title": "Синхронный рост проектов: инструменты разработки",
-      "summary": "Сразу 4 независимых репозиториев в категории «инструменты разработки» показали заметный недельный рост (суммарно +2834 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (Void-Tools-v2.0, chinese-buy-us-stock-guide, xiaohu-video-translate, ideogram4), что указывает на интерес сообщества к направлению «инструменты разработки», а не к одному вирусному репозиторию.",
+      "summary": "Сразу 5 независимых репозиториев в категории «инструменты разработки» показали заметный недельный рост (суммарно +3173 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (Void-Tools-v2.0, chinese-buy-us-stock-guide, qiaomu-goal-meta-skill, xiaohu-video-translate), что указывает на интерес сообщества к направлению «инструменты разработки», а не к одному вирусному репозиторию.",
       "category": "developer-tools",
       "signalStrength": "high",
       "repos": [
         {
           "name": "Void-Tools-v2.0",
           "url": "https://github.com/V0id-v2/Void-Tools-v2.0",
-          "stars": 2140,
-          "starsDelta": 1553
+          "stars": 2209,
+          "starsDelta": 1622
         },
         {
           "name": "chinese-buy-us-stock-guide",
           "url": "https://github.com/zgwl/chinese-buy-us-stock-guide",
-          "stars": 4340,
-          "starsDelta": 991
+          "stars": 4386,
+          "starsDelta": 908
+        },
+        {
+          "name": "qiaomu-goal-meta-skill",
+          "url": "https://github.com/joeseesun/qiaomu-goal-meta-skill",
+          "stars": 611,
+          "starsDelta": 320
         },
         {
           "name": "xiaohu-video-translate",
@@ -108,10 +114,23 @@
         {
           "name": "ideogram4",
           "url": "https://github.com/ideogram-oss/ideogram4",
-          "stars": 2025,
-          "starsDelta": 102
+          "stars": 2058,
+          "starsDelta": 135
         }
       ]
     }
-  ]
+  ],
+  "weirdFindOfTheWeek": {
+    "title": "Goose",
+    "repo": "b-nnett/goose",
+    "url": "https://github.com/b-nnett/goose",
+    "category": "Unexpected Tools",
+    "whatIsIt": "Goose — это локальный проект для сбора и отображения метрик здоровья с устройств WHOOP 5.0 через приложение на iOS.",
+    "whyInteresting": "Проект Goose привлек внимание не только своей функциональностью, но и неожиданным ростом популярности. За одну неделю он собрал 250 новых звезд, что само по себе вызывает интерес и желание узнать, что именно такого в нем есть. Кажется, что пользователи нашли что-то необычное в этом инструменте, и это создает атмосферу загадки вокруг проекта.\n\nКроме того, его визуальная привлекательность и возможность взаимодействия с устройствами WHOOP делают его не только полезным, но и интригующим. В мире, где технологии развиваются с бешеной скоростью, такие находки как Goose показывают, что всегда есть место для необычного и неожиданного.",
+    "stars": 2528,
+    "weeklyGrowth": 250,
+    "weirdScore": 55.8,
+    "telegramTitle": "Странный GitHub недели: Goose Swift",
+    "telegramPost": "🧩 Странный GitHub недели\n\nНазвание проекта: b-nnett/goose\n\nЧто это:\nGoose — это локальный проект для сбора и отображения метрик здоровья с устройств WHOOP 5.0 через приложение на iOS.\n\nПочему попало в радар:\nПроект Goose привлек внимание своим неожиданным ростом: за неделю он собрал 250 новых звезд. Пользователи, похоже, нашли в нем что-то необычное и интересное.\n\nGitHub:\nhttps://github.com/b-nnett/goose"
+  }
 }
