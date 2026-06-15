@@ -14,6 +14,7 @@ import type {
   WeeklyRadarReport,
   WeeklyRadarTrend,
 } from "./types";
+import { generateWeirdFindOfTheWeek } from "./weirdFindOfWeek";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_REPOS_IN_TREND = 2;
@@ -213,12 +214,11 @@ function clusterToTrend(cluster: CategoryCluster): WeeklyRadarTrend {
 }
 
 /**
- * Собирает данные недели, выделяет 1–3 GitHub-тренда, возвращает отчёт.
- * Не генерирует контент для Telegram и не оценивает «уровни радара будущего».
+ * Собирает данные недели, выделяет 1–3 GitHub-тренда (без weird-блока).
  */
-export function generateWeeklyRadar(
+export function generateWeeklyRadarTrends(
   options: GenerateWeeklyRadarOptions = {}
-): WeeklyRadarReport {
+): Pick<WeeklyRadarReport, "week" | "generatedAt" | "trends"> {
   const now = options.now ?? new Date();
   const maxTrends = Math.min(3, Math.max(1, options.maxTrends ?? MAX_TRENDS));
 
@@ -234,6 +234,21 @@ export function generateWeeklyRadar(
     week: isoWeekString(now),
     generatedAt: now.toISOString(),
     trends,
+  };
+}
+
+/**
+ * Собирает данные недели: serious trends + weirdFindOfTheWeek (async AI).
+ */
+export async function generateWeeklyRadar(
+  options: GenerateWeeklyRadarOptions = {}
+): Promise<WeeklyRadarReport> {
+  const base = generateWeeklyRadarTrends(options);
+  const weirdFindOfTheWeek = await generateWeirdFindOfTheWeek();
+
+  return {
+    ...base,
+    weirdFindOfTheWeek,
   };
 }
 
@@ -255,10 +270,10 @@ export function writeWeeklyRadarReport(
   return filePath;
 }
 
-export function generateAndWriteWeeklyRadar(
+export async function generateAndWriteWeeklyRadar(
   options: GenerateWeeklyRadarOptions = {}
-): { report: WeeklyRadarReport; filePath: string } {
-  const report = generateWeeklyRadar(options);
+): Promise<{ report: WeeklyRadarReport; filePath: string }> {
+  const report = await generateWeeklyRadar(options);
   const filePath = writeWeeklyRadarReport(report);
   return { report, filePath };
 }

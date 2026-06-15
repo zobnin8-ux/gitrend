@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { checkLinkedInPostQuality } from "@/lib/linkedin-post-quality";
+import { checkLinkedInPostQuality, buildLinkedInValidationContext } from "@/lib/linkedin-post-quality";
 import type { InsightPeriod, LinkedInPost, TrendInsights } from "@/lib/types";
 
 type LinkedInPostTab = "english" | "russian";
@@ -31,9 +31,16 @@ export function LinkedInPostSection({
 
   const post = report.linkedinPost;
   const hasPost = Boolean(post?.english?.trim());
+  const validationContext = useMemo(
+    () => buildLinkedInValidationContext(report),
+    [report]
+  );
   const quality = useMemo(
-    () => (post?.english ? checkLinkedInPostQuality(post.english) : null),
-    [post?.english]
+    () =>
+      post?.english
+        ? checkLinkedInPostQuality(post.english, validationContext)
+        : null,
+    [post?.english, validationContext]
   );
 
   useEffect(() => {
@@ -102,8 +109,8 @@ export function LinkedInPostSection({
         <div>
           <h2 className="text-lg font-semibold text-slate-800">LinkedIn Post</h2>
           <p className="text-sm text-slate-500">
-            Синтез выводов отчёта: executive summary, signals, implications,
-            narrative shifts — не пересказ категории
+            Пост вокруг Most Surprising Insight — неожиданное наблюдение, не
+            пересказ категории
           </p>
         </div>
       </div>

@@ -9,7 +9,15 @@ import type {
   LinkedInPost,
 } from "./types";
 import { computeTopicMetrics } from "./trend-metrics";
-import { checkLinkedInPostQuality as validateLinkedInPost } from "./linkedin-post-quality";
+import { buildLinkedInEvidenceBrief } from "./linkedin-post-evidence";
+import {
+  checkLinkedInPostQuality as validateLinkedInPost,
+  buildLinkedInValidationContext,
+} from "./linkedin-post-quality";
+import {
+  extractMostSurprisingInsight,
+  normalizeMostSurprisingInsight,
+} from "./linkedin-surprising-insight";
 
 export { checkLinkedInPostQuality } from "./linkedin-post-quality";
 
@@ -26,6 +34,7 @@ interface SummaryInput {
   description: string | null;
   language: string | null;
   topics: string[];
+  readme_excerpt?: string | null;
 }
 
 interface OpenAiResponse {
@@ -42,7 +51,10 @@ export async function generateRussianSummary(
 
   const userPrompt = [
     `Репозиторий: ${input.full_name}`,
-    input.description ? `Описание: ${input.description}` : null,
+    input.readme_excerpt
+      ? `README (приоритетный источник):\n${input.readme_excerpt}`
+      : null,
+    input.description ? `Описание GitHub: ${input.description}` : null,
     input.language ? `Язык: ${input.language}` : null,
     input.topics.length ? `Темы: ${input.topics.join(", ")}` : null,
   ]
@@ -65,8 +77,11 @@ export async function generateRussianSummary(
           role: "system",
           content:
             "Ты помощник, который кратко описывает GitHub-репозитории на русском языке. " +
-            "Ответь строго 2–3 предложениями: (1) что это за проект, (2) для чего используется. " +
-            "Не используй маркдаун и списки, только обычный текст.",
+            "Ответь строго 1–3 короткими предложениями: что это за проект и что он делает. " +
+            "Используй README как главный источник, затем описание и темы. " +
+            "Не упоминай популярность, звёзды, рост, тренды. " +
+            "Не выдумывай функции, которых нет в данных. " +
+            "Не используй маркдаун и списки, только обычный текст. Максимум ~300 символов.",
         },
         {
           role: "user",
@@ -163,18 +178,8 @@ ROOT CAUSE INTELLIGENCE — недостаточно определить тре
 5. Смену нарратива (narrative_shifts: old_narrative, new_narrative).
 6. Один главный вывод недели (insight_of_the_week) — самый сильный кандидат для публикации.
 
-LINKEDIN POST (linkedinPost) — синтез ПОЛНОГО отчёта, НЕ пересказ названия категории.
-Порядок работы: прочитай executive_summary, insight_of_the_week, market_signals, hidden_signals, future_trends, trend_drivers, market_implications, second_order_effects, narrative_shifts → выдели самый интересный вывод → напиши пост с ИНТЕРПРЕТАЦИЕЙ (почему важно, что меняется, к чему ведёт).
-ЗАПРЕЩЕНО: «AI agents are growing», «this trend is important», «developers are interested», «the future looks promising», пересказ только category name без reasoning.
-english: 250–450 слов (минимум 200, максимум 600), plain text, голос founder/analyst/observer. Структура: (1) Hook с неожиданным углом, (2) What happened — конкретный сигнал из отчёта, (3) Why it matters — market implication / driver, (4) Larger shift — narrative_shift или second_order_effect, (5) Practical takeaway, (6) Source footer:
-Source:
-GitTrend Weekly Analysis
-Based on GitHub repository growth signals and trend clustering.
-Analyzed: [N] repositories
-Primary category: [category]
-russian: прямой перевод english (не отдельный пост).
-sourceCategory: тема главного вывода, не просто label категории.
-analyzedRepositories: repositories_count из входных данных.
+LINKEDIN POST (linkedinPost) — заглушка; финальный пост генерируется отдельным пайплайном из insight_of_the_week, narrative_shifts, hidden_signals, market_implications, second_order_effects, future_trends. НЕ пересказ main_trends / category name. Интерпретация («почему важно»), не описание роста.
+english/russian: можно кратко — будет перезаписано. sourceCategory + analyzedRepositories заполни.
 
 Работай как технологический аналитик.
 
@@ -373,7 +378,7 @@ export async function generateTrendInsights(
   }
 
   const report = normalizeInsights(parsed, compact.length);
-  // Dedicated pipeline: full report → key insight extraction → LinkedIn post
+  // Dedicated pipeline: full report → surprising insight → key insight → LinkedIn post
   report.linkedinPost = await regenerateLinkedInPost(report, compact.length, {
     allowFallback: true,
   });
@@ -417,6 +422,15 @@ const EMPTY_INSIGHT_WEEK: TrendInsights["insight_of_the_week"] = {
   evidence_repositories: [],
 };
 
+const EMPTY_SURPRISING: TrendInsights["most_surprising_insight"] = {
+  headline: "",
+  explanation: "",
+  why_surprising: "",
+  evidence_repositories: [],
+  dimensions: [],
+  surprise_score: 0,
+};
+
 const EMPTY_LINKEDIN_POST: LinkedInPost = {
   english: "",
   russian: "",
@@ -457,6 +471,7 @@ function emptyInsights(): TrendInsights {
       weekly_report: { ...EMPTY_WEEKLY },
     },
     linkedinPost: { ...EMPTY_LINKEDIN_POST },
+    most_surprising_insight: { ...EMPTY_SURPRISING },
   };
 }
 
@@ -635,6 +650,9 @@ function normalizeInsights(
         : { title: "", content: weekly?.content ?? "" },
     },
     linkedinPost: normalizeLinkedInPost(r.linkedinPost, analyzedRepositories),
+    most_surprising_insight: normalizeMostSurprisingInsight(
+      r.most_surprising_insight ?? EMPTY_SURPRISING
+    ),
   };
 }
 
@@ -656,62 +674,80 @@ function normalizeLinkedInPost(
 }
 
 const LINKEDIN_POST_TARGET_MIN = 250;
-const LINKEDIN_POST_MAX_RETRIES = 3;
+const LINKEDIN_POST_MAX_RETRIES = 4;
 const LINKEDIN_POST_TIMEOUT_MS = 90_000;
 
-const KEY_INSIGHT_EXTRACTION_PROMPT = `You extract the single most publishable conclusion from a GitHub market intelligence report.
+const KEY_INSIGHT_EXTRACTION_PROMPT = `You expand a PRE-SELECTED Most Surprising Insight into structured evidence for LinkedIn prose.
 
-Do NOT pick the trend category label. Pick the most interesting INTERPRETATION from:
-executive_summary, insight_of_the_week, market_signals, hidden_signals, future_trends, trend_drivers, market_implications, second_order_effects, narrative_shifts.
+The surprising insight is the PRIMARY narrative anchor. Do NOT replace it with a category growth summary or "strongest trend" headline.
+
+RULE: Evidence BEFORE interpretation. Prefer observable signals over speculation.
+
+STEP 1 — Answer these from the evidence_brief JSON only:
+- Concentration: one repo vs distributed? (trend_health.concentration, clustering.repository_count)
+- Convergence: multiple independent teams building similar things? (list owner/repo)
+- Acceleration: accelerating vs stable high growth? (trend_momentum, changed_since_last_report)
+- Category expansion: new entrants vs existing leaders growing? (changed_since_last_report.new_topics)
+- Sustainability: persists across periods or short spike? (trend_lifecycle, signal confidence, possible_hype)
+
+STEP 2 — Align all fields with the provided most_surprising_insight. The observation must support WHY this is surprising.
+
+STEP 3 — Derive interpretation grounded in that evidence — emphasize the non-obvious angle.
+
+Do NOT use main_trends category titles as the insight. Do NOT speculate about market overheating, new business models, industry disruption unless the report explicitly supports it.
 
 Return only valid JSON:
 {
-  "primary_conclusion": "one sentence — non-obvious interpretation, not category restatement",
-  "strongest_signal": "specific signal with evidence from report",
-  "why_it_matters": "market implication or driver",
-  "larger_shift": "narrative shift or second-order effect",
-  "practical_takeaway": "what builders/founders should conclude",
-  "evidence_repositories": ["owner/repo", ...],
-  "source_category": "topic of the insight (not generic label only)",
-  "hooks_to_avoid": ["generic phrases to NOT use in the post"]
+  "concentration": "concentrated|distributed|mixed + cite repos/concentration field",
+  "convergence": "yes/no + evidence repos",
+  "acceleration": "accelerating|stable|slowing + evidence",
+  "category_expansion": "new entrants|leaders only|mixed + evidence",
+  "sustainability": "persistent|early|unclear + evidence",
+  "evidence_summary": "2-4 sentences citing repos, signal types, concentration, momentum — NO speculation",
+  "evidence_bullets": ["observable fact 1 with repo names", "observable fact 2"],
+  "observation": "What was detected — must match surprising insight angle",
+  "interpretation": "Why surprising — ONLY what evidence supports",
+  "broader_implication": "Cautious implication tied to narrative_shift/second_order_effect IF in report",
+  "practical_takeaway": "What to watch — grounded in data",
+  "primary_conclusion": "one sentence — the surprising insight, evidence-based",
+  "source_sections": ["most_surprising_insight"],
+  "evidence_repositories": ["owner/repo"],
+  "source_category": "topic of the insight",
+  "hooks_to_avoid": ["unsupported speculation phrases", "category is growing rapidly"]
 }`;
 
-const LINKEDIN_POST_SYSTEM_PROMPT = `You are a technology founder and market analyst writing a LinkedIn post.
+const LINKEDIN_POST_PROSE_PROMPT = `You transform internal GitTrend analysis into a publish-ready LinkedIn post.
 
-You receive:
-1) Full AI Insights report (JSON)
-2) Pre-extracted key insight (JSON) — USE THIS as the core angle. Do not ignore it.
+INPUT: most_surprising_insight (PRIMARY narrative anchor) + structured analytical insight + evidence.
 
-Your job is NOT to restate a trend category name. Synthesize the extracted insight into one original observation grounded in report evidence.
+THE POST MUST REVOLVE AROUND ONE SURPRISING IDEA — not multiple trends, not a category summary.
 
-The post must answer:
-1. What happened? (specific signal)
-2. Why is it important? (interpretation)
-3. What larger shift does it indicate?
-4. What practical conclusion follows?
-5. Why should someone care?
+Answer "What surprised us this week?" BEFORE "What grew this week?"
 
-VOICE: professional founder / builder / market analyst. Original observation. No hype. No marketing fluff.
+The reader should think: "I didn't notice that" — not "yes, that category is growing."
 
-FORBIDDEN (never write these or close paraphrases):
-- "AI agents are growing."
-- "This trend is becoming important."
-- "Developers are interested."
-- "The future looks promising."
-- "This technology may change everything."
-- Posts that only rename the category without reasoning.
+FORBIDDEN as the main angle:
+- "[Category] is growing rapidly"
+- Restating the biggest trend or most stars without a non-obvious twist
+- Multiple unrelated ideas in one post
 
-REQUIRED DEPTH: reference actual report findings — strongest signal, market implication, hidden signal, narrative shift, second-order effect, insight of the week. Cite repository names where relevant.
+YOUR JOB — turn the surprising insight into natural prose. The reader must NEVER see the internal framework.
 
-LENGTH: english must be 250–450 words (minimum 200, maximum 600).
+FORBIDDEN in the final post (never write these words as section headers or labels):
+- Observation, Evidence, Interpretation, Implication, Practical Takeaway
+- Part 1 / Part 2 / etc.
 
-STRUCTURE (plain text, blank lines between sections):
-1. Hook — unexpected angle, not generic
-2. What happened — specific signal from report data
-3. Why it matters — interpretation using trend_drivers / market_implications
-4. Larger shift — narrative_shift or second_order_effect
-5. Personal takeaway — builder/founder perspective
-6. Source footer (exact format):
+VOICE: founder / builder sharing something genuinely surprising they found in GitHub data. First person OK ("I", "we").
+
+STRUCTURE (no labels — blank lines between paragraphs only):
+
+1) Hook — lead with the surprising angle (what was unexpected)
+2) The observation — what GitTrend data shows (weave repo names owner/repo naturally)
+3) Reasoning — why this is surprising vs what people assume
+4) Broader implication — cautious, evidence-tied
+5) Personal conclusion — what you would watch as a builder
+
+Then Source footer (exact format):
 
 Source:
 GitTrend Weekly Analysis
@@ -719,27 +755,53 @@ Based on GitHub repository growth signals and trend clustering.
 Analyzed: N repositories
 Primary category: Category Name
 
-russian: direct translation of english (same structure, same meaning). NOT an independent post.
+RULES:
+- ONE idea only — the most surprising insight
+- Evidence-first; cite repos naturally in sentences
+- Do NOT write like a consulting report
+- russian: direct translation of english
 
-QUALITY GATE before returning:
-- Does the post contain real insight?
-- Does it explain why the trend matters?
-- Does it include reasoning?
-- Could a thoughtful human analyst have written it?
-- Is it substantially more valuable than simply naming the trend?
-If any answer is No — rewrite before returning.
+LENGTH: english 250–450 words (min 200, max 600).
 
 Return only valid JSON: { "english": string, "russian": string, "sourceCategory": string, "analyzedRepositories": number }`;
 
 interface LinkedInKeyInsight {
-  primary_conclusion: string;
-  strongest_signal: string;
-  why_it_matters: string;
-  larger_shift: string;
+  concentration: string;
+  convergence: string;
+  acceleration: string;
+  category_expansion: string;
+  sustainability: string;
+  evidence_summary: string;
+  evidence_bullets: string[];
+  observation: string;
+  interpretation: string;
+  broader_implication: string;
   practical_takeaway: string;
+  primary_conclusion: string;
+  source_sections: string[];
   evidence_repositories: string[];
   source_category: string;
   hooks_to_avoid: string[];
+}
+
+function buildLinkedInInsightExtractionContext(
+  report: TrendInsights,
+  analyzedRepositories: number
+): string {
+  return JSON.stringify(
+    {
+      evidence_brief: buildLinkedInEvidenceBrief(report, analyzedRepositories),
+      insight_of_the_week: report.insight_of_the_week,
+      narrative_shifts: report.narrative_shifts ?? [],
+      hidden_signals: report.hidden_signals ?? [],
+      market_implications: report.market_implications ?? [],
+      second_order_effects: report.second_order_effects ?? [],
+      future_trends: report.future_trends ?? [],
+      market_misconceptions: report.market_misconceptions ?? [],
+    },
+    null,
+    0
+  );
 }
 
 function buildLinkedInPostContext(
@@ -754,6 +816,7 @@ function buildLinkedInPostContext(
       executive_summary: report.executive_summary,
       insight_of_the_week: report.insight_of_the_week,
       market_signals: report.market_signals ?? [],
+      trend_health: report.trend_health ?? [],
       hidden_signals: report.hidden_signals ?? [],
       future_trends: report.future_trends ?? [],
       main_trends: report.main_trends ?? [],
@@ -825,23 +888,38 @@ async function callOpenAiJson(
 
 async function extractLinkedInKeyInsight(
   report: TrendInsights,
-  analyzedRepositories: number
+  analyzedRepositories: number,
+  surprisingInsight: TrendInsights["most_surprising_insight"]
 ): Promise<LinkedInKeyInsight> {
   const content = await callOpenAiJson(
     KEY_INSIGHT_EXTRACTION_PROMPT,
-    `Full AI Insights report (JSON):\n${buildLinkedInPostContext(report, analyzedRepositories)}\n\n` +
-      `Return the single most interesting publishable conclusion as JSON.`,
-    { temperature: 0.35, max_tokens: 900 }
+    `Most Surprising Insight (PRIMARY anchor — build all fields around this):\n` +
+      JSON.stringify(surprisingInsight, null, 2) +
+      `\n\nAnalytical sections from GitTrend report (JSON):\n${buildLinkedInInsightExtractionContext(report, analyzedRepositories)}\n\n` +
+      `Expand the surprising insight with evidence from evidence_brief. Do NOT replace it with a category summary.`,
+    { temperature: 0.3, max_tokens: 1100 }
   );
 
   try {
     const parsed = JSON.parse(content) as Partial<LinkedInKeyInsight>;
     return {
-      primary_conclusion: parsed.primary_conclusion?.trim() ?? "",
-      strongest_signal: parsed.strongest_signal?.trim() ?? "",
-      why_it_matters: parsed.why_it_matters?.trim() ?? "",
-      larger_shift: parsed.larger_shift?.trim() ?? "",
+      concentration: parsed.concentration?.trim() ?? "",
+      convergence: parsed.convergence?.trim() ?? "",
+      acceleration: parsed.acceleration?.trim() ?? "",
+      category_expansion: parsed.category_expansion?.trim() ?? "",
+      sustainability: parsed.sustainability?.trim() ?? "",
+      evidence_summary: parsed.evidence_summary?.trim() ?? "",
+      evidence_bullets: Array.isArray(parsed.evidence_bullets)
+        ? parsed.evidence_bullets.filter(Boolean)
+        : [],
+      observation: parsed.observation?.trim() ?? "",
+      interpretation: parsed.interpretation?.trim() ?? "",
+      broader_implication: parsed.broader_implication?.trim() ?? "",
       practical_takeaway: parsed.practical_takeaway?.trim() ?? "",
+      primary_conclusion: parsed.primary_conclusion?.trim() ?? "",
+      source_sections: Array.isArray(parsed.source_sections)
+        ? parsed.source_sections.filter(Boolean)
+        : [],
       evidence_repositories: Array.isArray(parsed.evidence_repositories)
         ? parsed.evidence_repositories.filter(Boolean)
         : [],
@@ -858,21 +936,35 @@ async function extractLinkedInKeyInsight(
 async function requestLinkedInPostGeneration(
   report: TrendInsights,
   analyzedRepositories: number,
+  surprisingInsight: TrendInsights["most_surprising_insight"],
   keyInsight: LinkedInKeyInsight,
   qualityFeedback?: string
 ): Promise<Partial<LinkedInPost>> {
   const userContent =
-    `Full AI Insights report (JSON):\n${buildLinkedInPostContext(report, analyzedRepositories)}\n\n` +
-    `Extracted key insight (JSON):\n${JSON.stringify(keyInsight, null, 2)}\n\n` +
+    `Most Surprising Insight (revolve the entire post around this ONE idea):\n` +
+    JSON.stringify(surprisingInsight, null, 2) +
+    `\n\nInternal analytical structure (transform into natural prose — do NOT expose labels):\n` +
+    JSON.stringify(keyInsight, null, 2) +
+    `\n\nEvidence reference (weave into sentences):\n` +
+    JSON.stringify(
+      {
+        evidence_brief: buildLinkedInEvidenceBrief(report, analyzedRepositories),
+        evidence_repositories: keyInsight.evidence_repositories,
+      },
+      null,
+      2
+    ) +
+    `\n\nanalyzedRepositories for footer: ${analyzedRepositories}\n` +
+    `sourceCategory suggestion: ${keyInsight.source_category || "General"}\n\n` +
     (qualityFeedback
       ? `PREVIOUS ATTEMPT REJECTED: ${qualityFeedback}\n` +
-        `Regenerate with deeper interpretation. Anchor on primary_conclusion, not category name. ` +
-        `Target ${LINKEDIN_POST_TARGET_MIN}–450 words.\n\n`
+        `Rewrite leading with what SURPRISED us — not what grew. One surprising idea only. ` +
+        `No category summary. Target ${LINKEDIN_POST_TARGET_MIN}–450 words.\n\n`
       : "") +
     `Return JSON: { "english": string, "russian": string, "sourceCategory": string, "analyzedRepositories": number }`;
 
-  const content = await callOpenAiJson(LINKEDIN_POST_SYSTEM_PROMPT, userContent, {
-    temperature: 0.55,
+  const content = await callOpenAiJson(LINKEDIN_POST_PROSE_PROMPT, userContent, {
+    temperature: 0.45,
     max_tokens: 2800,
   });
 
@@ -893,7 +985,11 @@ export async function regenerateLinkedInPost(
       ? analyzedRepositories
       : report.linkedinPost?.analyzedRepositories ?? 0;
 
-  const keyInsight = await extractLinkedInKeyInsight(report, count);
+  const surprisingInsight = await extractMostSurprisingInsight(report, count);
+  report.most_surprising_insight = surprisingInsight;
+
+  const keyInsight = await extractLinkedInKeyInsight(report, count, surprisingInsight);
+  const validationContext = buildLinkedInValidationContext(report);
 
   let lastReason = "";
   let lastNormalized: LinkedInPost | null = null;
@@ -901,6 +997,7 @@ export async function regenerateLinkedInPost(
     const parsed = await requestLinkedInPostGeneration(
       report,
       count,
+      surprisingInsight,
       keyInsight,
       attempt > 0 ? lastReason : undefined
     );
@@ -909,7 +1006,7 @@ export async function regenerateLinkedInPost(
       normalized.sourceCategory = keyInsight.source_category;
     }
     lastNormalized = normalized;
-    const check = validateLinkedInPost(normalized.english);
+    const check = validateLinkedInPost(normalized.english, validationContext);
     if (check.ok) {
       return normalized;
     }

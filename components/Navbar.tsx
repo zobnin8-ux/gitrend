@@ -13,6 +13,7 @@ const links: { href: string; label: string }[] = [
   { href: "/new", label: "Новые проекты" },
   { href: "/favorites", label: "Избранное" },
   { href: "/insights", label: "AI-инсайты" },
+  { href: "/weird", label: "Weird Finds" },
   { href: "/search", label: "Поиск" },
 ];
 

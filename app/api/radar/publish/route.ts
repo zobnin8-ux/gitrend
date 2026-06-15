@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     let report: WeeklyRadarReport | null = null;
 
     if (regenerate) {
-      const generated = generateAndWriteWeeklyRadar();
+      const generated = await generateAndWriteWeeklyRadar();
       report = generated.report;
     } else {
       report = readExistingReport();

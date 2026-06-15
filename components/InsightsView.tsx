@@ -30,6 +30,7 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { DataMaturityBlock } from "@/components/DataMaturityBlock";
 import { LinkedInPostSection } from "@/components/LinkedInPostSection";
+import { MostSurprisingInsightSection } from "@/components/MostSurprisingInsightSection";
 
 const PERIODS: { key: InsightPeriod; label: string }[] = [
   { key: "daily", label: "День" },
@@ -425,8 +426,12 @@ export function InsightsView({
         {radarReport && (
           <div className="mt-3 text-xs text-slate-400">
             <span>
-              Неделя {radarReport.week} · трендов: {radarReport.trends.length}{" "}
-              · обновлён: {formatDateTime(radarReport.generatedAt)}
+              Неделя {radarReport.week} · трендов: {radarReport.trends.length}
+              {radarReport.weirdFindOfTheWeek
+                ? ` · weird: ${radarReport.weirdFindOfTheWeek.repo}`
+                : " · weird: —"}
+              {" · обновлён: "}
+              {formatDateTime(radarReport.generatedAt)}
             </span>
             {radarReport.trends.length === 0 && (
               <p className="mt-2 text-amber-700">
@@ -509,6 +514,7 @@ export function InsightsView({
             </div>
           )}
           <Report report={report} tab={tab} setTab={setTab} />
+          <MostSurprisingInsightSection report={report} />
           <LinkedInPostSection
             report={report}
             period={period}

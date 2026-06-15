@@ -29,7 +29,10 @@
 - **Русские описания репозиториев** — в таблице показывается AI-описание на
   русском (до 4 строк, tooltip с полным текстом и оригиналом с GitHub).
 - **AI-инсайты** (`/insights`) — аналитический отчёт по трендам: сигналы рынка,
-  root cause, идеи контента, **LinkedIn Post** (EN/RU), экспорт Markdown / JSON / ChatGPT.
+  root cause, идеи контента, **Most Surprising Insight**, **LinkedIn Post** (EN/RU),
+  экспорт Markdown / JSON / ChatGPT.
+- **Weird Finds** (`/weird`) — странные, смешные и неожиданно популярные репозитории:
+  карточки с «Что это?» и «Почему интересно?», фильтры, AI-генерация постов.
 - **Зрелость данных** — индикатор надёжности AI-анализа по объёму истории
   снапшотов.
 
@@ -122,14 +125,19 @@ npm run start
     /favorites       GET/POST — избранное
     /ai/insights     POST — генерация AI-отчёта
     /ai/insights/linkedin-post  POST — перегенерация LinkedIn-поста
+    /weird           GET  — список weird finds
+    /weird/content   POST — AI: описание + посты для карточки
   /insights          AI-инсайты по GitHub-трендам
+  /weird             Weird GitHub Finds (алиас /weird-finds → redirect)
   /popular, /trending/*, /new, /favorites, /search, /repo/[id]
 
 /components
   RepositoryTable       Таблица репозиториев
   ClampedDescription    Многострочное описание + tooltip
   InsightsView          UI AI-отчёта
+  MostSurprisingInsightSection  Блок «самый неожиданный инсайт»
   LinkedInPostSection   LinkedIn-пост (EN/RU, Copy, Regenerate)
+  WeirdFindsView        Карточки Weird Finds
   DataMaturityBlock     Блок «Зрелость данных»
   GrowthChart, Filters, StatsCards, …
 
@@ -139,6 +147,10 @@ npm run start
   analytics.ts          Расчёт роста
   ai.ts                 OpenAI: описания и TrendInsights
   linkedin-post-quality.ts  Проверка качества LinkedIn-поста
+  linkedin-surprising-insight.ts  Извлечение most_surprising_insight
+  weird.ts              Скоринг и отбор Weird Finds
+  weird-card-copy.ts    Короткие «Что это?» / «Почему интересно?» для карточек
+  weird-ai.ts           OpenAI для weird-карточек и weekly-radar export
   data-maturity.ts      Зрелость данных (server)
   repository-display.ts Русское описание для таблицы
   insights-export.ts    Экспорт MD / JSON / ChatGPT
@@ -157,18 +169,52 @@ obsidian/Gitrend.md     Заметка для Obsidian
 Раздел `/insights` формирует структурированный отчёт: сигналы рынка, trend health,
 root cause (драйверы, импликации, misconceptions), идеи контента для ZobninAI.
 
+### Most Surprising Insight
+
+Перед LinkedIn Post — блок с **самым неожиданным** наблюдением из отчёта: что
+контринтуитивно, почему это важно, на каких репозиториях основано. Якорь для
+LinkedIn-поста (не пересказ категории).
+
 ### LinkedIn Post
 
 Готовый пост для LinkedIn на `/insights` (English / Русский):
 
-- синтез **полного отчёта** (executive summary, signals, implications, narrative shifts) — не пересказ названия категории;
-- двухшаговая генерация: key insight extraction → пост с интерпретацией;
+- синтез **полного отчёта** через `most_surprising_insight` → key insight → **естественная проза** (не отчёт с заголовками);
+- двухшаговая генерация: surprising insight → key insight → пост с интерпретацией;
 - длина **200–600 слов** (цель 250–450), голос founder/analyst;
-- проверка качества (запрещённые generic-фразы, reasoning, ссылки на репозитории);
+- проверка качества (запрещённые generic-фразы, section labels, reasoning, repo evidence);
 - кнопки **Copy** и **Regenerate**; кэш вместе с отчётом.
 
 Блок **«Зрелость данных»** показывает, насколько истории снапшотов достаточно
 для уверенных выводов. Экспорт: Markdown, JSON, ChatGPT.
+
+## Weird Finds
+
+Раздел `/weird` — entertainment-слой поверх тех же данных GitHub: странные,
+смешные и неожиданно популярные репозитории (не market intelligence).
+
+### Карточки
+
+Каждая карточка отвечает на два разных вопроса:
+
+| Блок | Содержание | Лимит |
+|------|------------|-------|
+| **Что это?** | Одно короткое предложение — что делает репозиторий | 140 символов, 2 строки в UI |
+| **Почему интересно?** | Уникальная причина отбора (рост, категория, странная идея) | 220 символов, 3 строки в UI |
+
+Тексты генерируются детерминированно из метрик репозитория (`lib/weird-card-copy.ts`);
+при AI-регенерации — валидация и fallback. Повторяющиеся generic-фразы запрещены.
+
+### Фильтры и категории
+
+- Фильтры: Most Weird, Fastest Growing, Most Starred, Most Discussed
+- Категории: desktop-pets, developer-humor, useless-brilliant, retro-computing,
+  ai-oddities, visual-experiments, internet-culture, unexpected-tools
+
+### API
+
+- `GET /api/weird?filter=&category=&limit=` — список карточек
+- `POST /api/weird/content` — `{ github_id, type?: "what_is_this"|"attention"|"linkedin"|"telegram"|"all" }`
 
 ## Источники данных (GitHub)
 
@@ -204,6 +250,11 @@ reports/weekly-radar.json
 1–3 **тренда** (не отдельные репозитории): заголовок, summary, whyTrending,
 категория, signalStrength, список repos. Если достойных трендов нет — `"trends": []`.
 
+Опционально: **`weirdFindOfTheWeek`** — один «странный GitHub недели» для
+entertainment-рубрики «Радара будущего» (поля: `whatIsIt`, `whyInteresting`,
+`telegramTitle`, `telegramPost`, метрики). Генерируется из локальной БД;
+при `OPENAI_API_KEY` — AI-контент для Telegram.
+
 ### Локально
 
 ```bash
@@ -225,6 +276,7 @@ Workflow `.github/workflows/weekly-radar.yml` — **каждую субботу 
 
 ```txt
 src/radar/generateWeeklyRadar.ts  — детекция трендов и запись JSON
+src/radar/weirdFindOfWeek.ts      — отбор weirdFindOfTheWeek для JSON
 src/radar/commitReport.ts         — git commit
 ```
 

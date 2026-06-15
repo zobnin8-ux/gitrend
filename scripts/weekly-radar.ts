@@ -34,10 +34,13 @@ async function main(): Promise<void> {
     );
   }
 
-  const { report, filePath } = generateAndWriteWeeklyRadar();
+  const { report, filePath } = await generateAndWriteWeeklyRadar();
 
   console.log(`Week: ${report.week}`);
   console.log(`Trends: ${report.trends.length}`);
+  console.log(
+    `Weird find: ${report.weirdFindOfTheWeek ? report.weirdFindOfTheWeek.repo : "none"}`
+  );
   console.log(`Written: ${filePath}`);
 
   if (report.trends.length === 0) {

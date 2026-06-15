@@ -34,8 +34,12 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     exists: true,
-    report,
+    report: {
+      ...report,
+      weirdFindOfTheWeek: report.weirdFindOfTheWeek ?? null,
+    },
     trendsCount: report.trends.length,
+    hasWeirdFind: Boolean(report.weirdFindOfTheWeek),
     filePath: "reports/weekly-radar.json",
   });
 }
@@ -66,12 +70,13 @@ export async function POST(req: NextRequest) {
       await refreshData();
     }
 
-    const { report, filePath } = generateAndWriteWeeklyRadar();
+    const { report, filePath } = await generateAndWriteWeeklyRadar();
 
     return NextResponse.json({
       ok: true,
       report,
       trendsCount: report.trends.length,
+      hasWeirdFind: Boolean(report.weirdFindOfTheWeek),
       filePath: filePath.replace(process.cwd(), "").replace(/^[/\\]/, ""),
     });
   } catch (err) {

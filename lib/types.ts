@@ -224,7 +224,18 @@ export interface TrendInsights {
     evidence_repositories: string[];
     content_angle: string;
   }[];
+  /** Detected before LinkedIn post — primary narrative anchor for publication. */
+  most_surprising_insight: MostSurprisingInsight;
   linkedinPost: LinkedInPost;
+}
+
+export interface MostSurprisingInsight {
+  headline: string;
+  explanation: string;
+  why_surprising: string;
+  evidence_repositories: string[];
+  dimensions: string[];
+  surprise_score: number;
 }
 
 export interface LinkedInPost {
@@ -232,6 +243,70 @@ export interface LinkedInPost {
   russian: string;
   sourceCategory: string;
   analyzedRepositories: number;
+}
+
+/** Weird GitHub Finds — entertainment / discovery (separate from AI Insights). */
+export type WeirdCategoryId =
+  | "desktop-pets"
+  | "developer-humor"
+  | "useless-brilliant"
+  | "retro-computing"
+  | "ai-oddities"
+  | "visual-experiments"
+  | "internet-culture"
+  | "unexpected-tools";
+
+export type WeirdFilterId =
+  | "most_weird"
+  | "fastest_growing"
+  | "most_starred"
+  | "most_discussed";
+
+export interface WeirdFindItem {
+  github_id: number;
+  full_name: string;
+  name: string;
+  url: string;
+  description: string | null;
+  stars: number;
+  forks: number;
+  growth_7d: number;
+  growth_7d_percent: number;
+  growth_30d: number;
+  topics: string[];
+  language: string | null;
+  owner_avatar: string | null;
+  pushed_at: string;
+  category: WeirdCategoryId;
+  category_label: string;
+  weird_score: number;
+  what_is_this: string;
+  why_interesting: string;
+  score_breakdown: {
+    novelty: number;
+    unexpectedness: number;
+    virality: number;
+    visual_interest: number;
+    humor: number;
+    growth_rate: number;
+  };
+}
+
+export interface WeirdFindOfWeek {
+  item: WeirdFindItem;
+  week_key: string;
+  what_is_this?: string;
+  attention?: string;
+  linkedin_post?: string;
+  telegram_post?: string;
+}
+
+export interface WeirdFindsResponse {
+  items: WeirdFindItem[];
+  find_of_week: WeirdFindOfWeek | null;
+  total_candidates: number;
+  filter: WeirdFilterId;
+  category: WeirdCategoryId | "all";
 }
 
 export interface RepositoryFilters {

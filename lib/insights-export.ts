@@ -68,6 +68,22 @@ export function trendInsightsToMarkdown(
     );
   }
 
+  if (report.most_surprising_insight?.headline) {
+    const s = report.most_surprising_insight;
+    lines.push(
+      `## Most Surprising Insight`,
+      ``,
+      `### ${s.headline}`,
+      s.why_surprising ? `*${s.why_surprising}*` : "",
+      ``,
+      s.explanation,
+      ``,
+      `Репозитории: ${s.evidence_repositories.join(", ")}`,
+      s.surprise_score > 0 ? `Surprise score: ${s.surprise_score}` : "",
+      ``
+    );
+  }
+
   if (report.market_signals?.length) {
     lines.push(`## Ключевые сигналы рынка`, ``);
     for (const s of report.market_signals) {

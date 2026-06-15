@@ -108,6 +108,53 @@ function buildHeaders(): HeadersInit {
   return headers;
 }
 
+function sanitizeReadmeExcerpt(raw: string, maxChars: number): string {
+  const text = raw
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^#+\s+/gm, "")
+    .replace(/[#*`>|]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return text.slice(0, maxChars).trim();
+}
+
+/** First ~2k chars of README for AI context. Returns null if missing or fetch fails. */
+export async function fetchReadmeExcerpt(
+  fullName: string,
+  maxChars = 2000
+): Promise<string | null> {
+  const [owner, repo] = fullName.split("/");
+  if (!owner || !repo) return null;
+
+  const url = `${GITHUB_API}/repos/${owner}/${repo}/readme`;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/vnd.github.raw",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "github-trends-tracker",
+        ...(process.env.GITHUB_TOKEN
+          ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+          : {}),
+      },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!res.ok) return null;
+
+    const raw = await res.text();
+    const excerpt = sanitizeReadmeExcerpt(raw, maxChars);
+    return excerpt.length >= 20 ? excerpt : null;
+  } catch {
+    return null;
+  }
+}
+
 // Поиск репозиториев по одному источнику.
 async function searchRepositories(
   query: string,
@@ -220,11 +267,19 @@ export async function refreshData(
     // (или для тех, у кого его ещё нет), чтобы не тратить токены повторно.
     if (aiEnabled && (!existing || !existing.ai_summary)) {
       try {
+        let readmeExcerpt: string | null = null;
+        try {
+          readmeExcerpt = await fetchReadmeExcerpt(item.full_name);
+        } catch {
+          /* optional */
+        }
+
         const summary = await generateRussianSummary({
           full_name: item.full_name,
           description: item.description,
           language: item.language,
           topics: item.topics ?? [],
+          readme_excerpt: readmeExcerpt,
         });
         if (summary) {
           setAiSummary(item.id, summary);
