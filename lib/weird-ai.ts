@@ -1,17 +1,11 @@
 import type { WeirdFindItem } from "./types";
 import { fetchReadmeExcerpt } from "./github";
 import {
-  buildWhatIsThis,
   buildWhatIsThisContext,
   formatWhatIsThisContextForPrompt,
   isLowQualityProjectData,
-  normalizeWhatIsThisCandidate,
-  WHAT_IS_THIS_UNAVAILABLE,
 } from "./weird-what-is-this";
-import {
-  sanitizeCardWhatIsIt,
-  sanitizeCardWhyInteresting,
-} from "./weird-card-copy";
+import { buildShortDescription } from "./weird-short-description";
 import type { RepositoryWithGrowth } from "./types";
 import { getRepositoriesWithGrowth } from "./analytics";
 
@@ -40,10 +34,10 @@ async function callWeirdAi(system: string, user: string, maxTokens: number): Pro
       Authorization: `Bearer ${apiKey}`,
     },
     cache: "no-store",
-    signal: AbortSignal.timeout(60_000),
+    signal: AbortSignal.timeout(90_000),
     body: JSON.stringify({
       model: MODEL,
-      temperature: 0.75,
+      temperature: 0.8,
       max_tokens: maxTokens,
       messages: [
         { role: "system", content: system },
@@ -62,258 +56,118 @@ async function callWeirdAi(system: string, user: string, maxTokens: number): Pro
   return content;
 }
 
-function repoContext(item: WeirdFindItem): string {
-  return [
-    `Repository: ${item.full_name}`,
-    `What it is: ${item.what_is_this}`,
-    item.description ? `Description: ${item.description}` : null,
-    `Stars: ${item.stars}, 7d growth: +${item.growth_7d}`,
-    `Category: ${item.category_label}`,
-    item.topics.length ? `Topics: ${item.topics.join(", ")}` : null,
-    `Heuristic note: ${item.why_interesting}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
 function getRepoForWeirdItem(item: WeirdFindItem): RepositoryWithGrowth | null {
   return getRepositoriesWithGrowth().find((r) => r.github_id === item.github_id) ?? null;
 }
 
-/** Russian "Что это?" — what the project does, not why it is trending. */
-export async function generateWeirdWhatIsThis(item: WeirdFindItem): Promise<string> {
-  const repo = getRepoForWeirdItem(item);
-  if (!repo) return item.what_is_this;
-
-  const readme = await fetchReadmeExcerpt(item.full_name);
-  if (isLowQualityProjectData(repo) && !readme) {
-    return WHAT_IS_THIS_UNAVAILABLE;
-  }
-
-  const ctx = buildWhatIsThisContext(repo, readme);
-  const text = await callWeirdAi(
-    `You write ONE short Russian sentence: what a GitHub repository IS and DOES.
-
-Requirements:
-- Exactly ONE sentence, max 140 characters
-- Simple, concrete language — no filler
-- Answer ONLY what the project does
-- Do NOT mention stars, growth, popularity, trends, or why it is interesting
-- Do NOT start with "Репозиторий представляет собой" or similar generic openings
-- Use README as primary source, then GitHub description, then topics
-- Do NOT invent functionality not in the sources
-- If too vague, reply exactly: ${WHAT_IS_THIS_UNAVAILABLE}
-
-Plain text only.`,
-    formatWhatIsThisContextForPrompt(ctx),
-    180
-  );
-
-  if (text.trim() === WHAT_IS_THIS_UNAVAILABLE) {
-    return WHAT_IS_THIS_UNAVAILABLE;
-  }
-
-  const normalized = normalizeWhatIsThisCandidate(text);
-  if (normalized) {
-    return sanitizeCardWhatIsIt(normalized, repo);
-  }
-
-  const fallback = buildWhatIsThis(repo);
-  return fallback !== WHAT_IS_THIS_UNAVAILABLE
-    ? sanitizeCardWhatIsIt(fallback, repo)
-    : WHAT_IS_THIS_UNAVAILABLE;
-}
-
-/** "Why this caught our attention" — repo-specific, not generic. */
-export async function generateWeirdAttention(item: WeirdFindItem): Promise<string> {
-  const repo = getRepoForWeirdItem(item);
-  if (!repo) return item.why_interesting;
-
-  const text = await callWeirdAi(
-    `You write a Russian "why this repo is interesting" blurb for a weird GitHub find card.
-
-Requirements:
-- 1–2 short sentences, max 220 characters total
-- MUST mention this specific repo (name or unique idea from description)
-- Include at least one of: weekly growth (+N stars), weird concept, humor, visual hook, category
-- Do NOT use generic phrases like "странные штуки разлетаются", "визуальная задумка — не утилита", "существует ради шутки"
-- Do NOT repeat what the project does (that's a separate field)
-- Playful tone, not corporate market analysis
-- Plain text, no markdown`,
-    repoContext(item),
-    280
-  );
-  return sanitizeCardWhyInteresting(text, item, repo, new Set());
-}
-
-export async function generateWeirdLinkedInPost(item: WeirdFindItem): Promise<string> {
-  return callWeirdAi(
-    `Write a short LinkedIn post (120-200 words) about a weird/fun GitHub repository discovery.
-Style: founder/observer sharing something delightful they found on GitHub.
-Contrast serious tech trends with this playful find. Be specific about the repo.
-NOT market intelligence. NOT "AI agents are growing". Make people smile and want to click.
-Plain text, no hashtags spam. Optional line break before a short closing thought.`,
-    repoContext(item),
-    400
-  );
-}
-
-export async function generateWeirdTelegramPost(item: WeirdFindItem): Promise<string> {
-  return callWeirdAi(
-    `Write a Telegram post (2-5 short lines) about a weird GitHub find.
-Short, humorous, easy to share. Include repo name. Casual tone. Russian or English OK.
-No corporate speak. Max ~400 characters if possible.`,
-    repoContext(item),
-    200
-  );
+function radarContext(item: WeirdFindItem, shortDescription: string, readme?: string | null): string {
+  return [
+    `Repository: ${item.full_name}`,
+    `Short description: ${shortDescription}`,
+    item.description ? `GitHub description: ${item.description}` : null,
+    readme ? `README excerpt:\n${readme.slice(0, 1200)}` : null,
+    `Stars: ${item.stars}, weekly growth: +${item.growth_7d}`,
+    `Category: ${item.category_label}, weird score: ${item.weird_score}`,
+    item.topics.length ? `Topics: ${item.topics.join(", ")}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 export interface WeirdRadarWeeklyExport {
-  whatIsIt: string;
-  whyInteresting: string;
+  shortDescription: string;
   telegramTitle: string;
   telegramPost: string;
 }
 
-/** Контент weirdFindOfTheWeek для weekly-radar.json (Радар будущего). */
+function displayTitle(item: WeirdFindItem): string {
+  return item.name
+    .split(/[-_]/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function buildTelegramPostFallback(
+  item: WeirdFindItem,
+  shortDescription: string
+): { telegramTitle: string; telegramPost: string } {
+  const title = displayTitle(item);
+  const telegramTitle = `Странный GitHub недели: ${title.toLowerCase()}`;
+
+  const telegramPost = [
+    "На этой неделе в GitHub обнаружилась крайне странная штука.",
+    "",
+    `${item.full_name} — ${shortDescription}`,
+    "",
+    `За неделю проект получил +${item.growth_7d} ⭐ (всего ${item.stars.toLocaleString("ru-RU")}). Категория: ${item.category_label}. Weird score: ${item.weird_score}.`,
+    "",
+    "Похоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.",
+    "",
+    `GitHub: ${item.url}`,
+  ].join("\n");
+
+  return { telegramTitle, telegramPost };
+}
+
+/** Weekly storytelling export for Radar — not used in GitTrend UI. */
 export async function generateWeirdRadarWeeklyExport(
   item: WeirdFindItem
 ): Promise<WeirdRadarWeeklyExport> {
   const repo = getRepoForWeirdItem(item);
-  let whatIsIt = item.what_is_this?.trim() ?? "";
-
-  if (isWeirdAiEnabled()) {
-    whatIsIt = await generateWeirdWhatIsThis(item);
-  } else if (repo) {
-    whatIsIt = buildWhatIsThis(repo);
-  }
-
-  const userPayload = [
-    repoContext(item),
-    whatIsIt ? `\nWhatIsIt (already generated, reuse facts):\n${whatIsIt}` : null,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const shortDescription = item.short_description?.trim() || (repo ? buildShortDescription(repo) : "");
 
   if (!isWeirdAiEnabled()) {
-    const whyInteresting = item.why_interesting;
-    const title = item.name.replace(/[-_]/g, " ");
-    return {
-      whatIsIt,
-      whyInteresting,
-      telegramTitle: `Странный GitHub недели: ${title}`,
-      telegramPost: [
-        "🧩 Странный GitHub недели",
-        "",
-        `Название проекта: ${item.full_name}`,
-        "",
-        "Что это:",
-        whatIsIt,
-        "",
-        "Почему попало в радар:",
-        whyInteresting,
-        "",
-        "GitHub:",
-        item.url,
-      ].join("\n"),
-    };
+    const telegram = buildTelegramPostFallback(item, shortDescription);
+    return { shortDescription, ...telegram };
   }
 
+  const readme = await fetchReadmeExcerpt(item.full_name);
+  const ctx =
+    repo && !isLowQualityProjectData(repo)
+      ? formatWhatIsThisContextForPrompt(buildWhatIsThisContext(repo, readme))
+      : radarContext(item, shortDescription, readme);
+
   const raw = await callWeirdAi(
-    `You prepare Russian content for a weekly "Strange GitHub Find" rubric in Telegram.
+    `You write Russian Telegram content for a weekly rubric "Странный GitHub недели".
 
 Return plain JSON only:
 {
-  "whyInteresting": "1-3 short paragraphs in Russian — why this repo was selected (weirdness, growth, visual appeal, surprise, shareability). May mention stars and weekly growth.",
-  "telegramTitle": "short Russian title, e.g. Странный GitHub недели: ...",
-  "telegramPost": "ready-to-publish Telegram post in Russian"
+  "telegramTitle": "short title, e.g. Странный GitHub недели: ...",
+  "telegramPost": "complete Telegram post in Russian"
 }
 
-Rules for whyInteresting:
-- Playful but not corporate
-- Explain selection, NOT what the project does (whatIsIt covers that)
-- 1-3 paragraphs, plain text
-
 Rules for telegramPost:
-- Light, curious, playful tone
-- No heavy analytics or market intelligence
-- Use this structure:
-
-🧩 Странный GitHub недели
-
-Название проекта: owner/repo
-
-Что это:
-(1-3 sentences from whatIsIt)
-
-Почему попало в радар:
-(1-2 sentences from whyInteresting)
-
-GitHub:
-(url)
-
+- Length: 400–1000 characters
+- Language: Russian
+- Style: curious, playful, human — NOT corporate, NOT analytical, NOT consulting
+- Structure:
+  1) Opening — introduce the discovery (e.g. "На этой неделе в GitHub...")
+  2) What is it — explain the repo in simple language
+  3) Why it is funny/weird/unexpected — the key section (ridiculous idea, unexpected popularity, humor, internet culture, strange usefulness)
+  4) Closing — GitHub link and invite curiosity
 - Include the repo URL at the end
-- Max ~1200 characters`,
-    userPayload,
-    650
+- Do NOT use markdown headers or bullet lists
+- Write so someone who never opened GitHub still enjoys reading it
+
+The shortDescription field is already fixed — reuse its facts, do not contradict it.`,
+    ctx,
+    900
   );
 
   try {
     const parsed = JSON.parse(raw) as Partial<WeirdRadarWeeklyExport>;
-    const whyInteresting =
-      parsed.whyInteresting?.trim() || item.why_interesting;
     const telegramTitle =
       parsed.telegramTitle?.trim() ||
-      `Странный GitHub недели: ${item.name}`;
+      `Странный GitHub недели: ${displayTitle(item).toLowerCase()}`;
     let telegramPost = parsed.telegramPost?.trim() || "";
-    if (!telegramPost) {
-      telegramPost = [
-        "🧩 Странный GitHub недели",
-        "",
-        `Название проекта: ${item.full_name}`,
-        "",
-        "Что это:",
-        whatIsIt,
-        "",
-        "Почему попало в радар:",
-        whyInteresting,
-        "",
-        "GitHub:",
-        item.url,
-      ].join("\n");
+    if (telegramPost.length < 200) {
+      telegramPost = buildTelegramPostFallback(item, shortDescription).telegramPost;
     }
-    return {
-      whatIsIt,
-      whyInteresting,
-      telegramTitle,
-      telegramPost,
-    };
+    return { shortDescription, telegramTitle, telegramPost };
   } catch {
     return {
-      whatIsIt,
-      whyInteresting: item.why_interesting,
-      telegramTitle: `Странный GitHub недели: ${item.name}`,
-      telegramPost: raw,
+      shortDescription,
+      ...buildTelegramPostFallback(item, shortDescription),
     };
   }
-}
-
-export interface WeirdGeneratedContent {
-  what_is_this: string;
-  attention: string;
-  linkedin_post: string;
-  telegram_post: string;
-}
-
-export async function generateWeirdContentBundle(
-  item: WeirdFindItem
-): Promise<WeirdGeneratedContent> {
-  const what_is_this = await generateWeirdWhatIsThis(item);
-  const itemWithWhat = { ...item, what_is_this };
-  const [attention, linkedin_post, telegram_post] = await Promise.all([
-    generateWeirdAttention(itemWithWhat),
-    generateWeirdLinkedInPost(itemWithWhat),
-    generateWeirdTelegramPost(itemWithWhat),
-  ]);
-  return { what_is_this, attention, linkedin_post, telegram_post };
 }

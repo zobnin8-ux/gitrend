@@ -1,16 +1,13 @@
 import { getRepositoriesWithGrowth } from "./analytics";
+import { fetchReadmeExcerpt } from "./github";
 import { WEIRD_CATEGORY_LABELS } from "./weird-constants";
-import {
-  buildCardWhatIsIt,
-  buildCardWhyInteresting,
-  finalizeWeirdCardCopy,
-} from "./weird-card-copy";
+import { buildShortDescription } from "./weird-short-description";
 import type {
   RepositoryWithGrowth,
   WeirdCategoryId,
   WeirdFilterId,
+  WeirdFindDetails,
   WeirdFindItem,
-  WeirdFindOfWeek,
   WeirdFindsResponse,
 } from "./types";
 
@@ -207,18 +204,7 @@ export function computeWeirdScore(repo: RepositoryWithGrowth): {
   return { total: Math.round(total * 10) / 10, breakdown };
 }
 
-export function buildWhyInteresting(
-  repo: RepositoryWithGrowth,
-  category: WeirdCategoryId,
-  breakdown: WeirdFindItem["score_breakdown"]
-): string {
-  return buildCardWhyInteresting(repo, category, breakdown, new Set());
-}
-
-function toWeirdFindItem(
-  repo: RepositoryWithGrowth,
-  usedWhy: Set<string>
-): WeirdFindItem | null {
+function toWeirdFindItem(repo: RepositoryWithGrowth): WeirdFindItem | null {
   if (isWeirdExcluded(repo)) return null;
 
   const text = haystack(repo);
@@ -255,8 +241,7 @@ function toWeirdFindItem(
     category,
     category_label: WEIRD_CATEGORY_LABELS[category],
     weird_score: total,
-    what_is_this: buildCardWhatIsIt(repo),
-    why_interesting: buildCardWhyInteresting(repo, category, breakdown, usedWhy),
+    short_description: buildShortDescription(repo),
     score_breakdown: breakdown,
   };
 }
@@ -292,47 +277,22 @@ export function getWeirdFinds(options?: {
   const category = options?.category ?? "all";
   const limit = options?.limit ?? 36;
 
-  const repos = getRepositoriesWithGrowth();
-  const reposById = new Map(repos.map((r) => [r.github_id, r]));
-  const usedWhy = new Set<string>();
   const candidates: WeirdFindItem[] = [];
 
-  for (const repo of repos) {
-    const item = toWeirdFindItem(repo, usedWhy);
+  for (const repo of getRepositoriesWithGrowth()) {
+    const item = toWeirdFindItem(repo);
     if (!item) continue;
     if (category !== "all" && item.category !== category) continue;
     candidates.push(item);
   }
 
-  const sorted = sortItems(candidates, filter).slice(0, limit);
-  const items = finalizeWeirdCardCopy(sorted, reposById);
-  const find_of_week = pickFindOfWeek(candidates);
+  const items = sortItems(candidates, filter).slice(0, limit);
 
   return {
     items,
-    find_of_week,
     total_candidates: candidates.length,
     filter,
     category,
-  };
-}
-
-function weekKey(date = new Date()): string {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / DAY_MS + 1) / 7);
-  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
-}
-
-function pickFindOfWeek(candidates: WeirdFindItem[]): WeirdFindOfWeek | null {
-  if (candidates.length === 0) return null;
-  const sorted = [...candidates].sort((a, b) => b.weird_score - a.weird_score);
-  const item = sorted[0];
-  return {
-    item,
-    week_key: weekKey(),
   };
 }
 
@@ -340,13 +300,10 @@ function pickFindOfWeek(candidates: WeirdFindItem[]): WeirdFindOfWeek | null {
 export function selectTopWeirdFindForExport(
   minScore = 28
 ): WeirdFindItem | null {
-  const repos = getRepositoriesWithGrowth();
-  const reposById = new Map(repos.map((r) => [r.github_id, r]));
-  const usedWhy = new Set<string>();
   const candidates: WeirdFindItem[] = [];
 
-  for (const repo of repos) {
-    const item = toWeirdFindItem(repo, usedWhy);
+  for (const repo of getRepositoriesWithGrowth()) {
+    const item = toWeirdFindItem(repo);
     if (item) candidates.push(item);
   }
 
@@ -356,17 +313,28 @@ export function selectTopWeirdFindForExport(
   const top = sorted[0];
   if (top.weird_score < minScore) return null;
 
-  return finalizeWeirdCardCopy([top], reposById)[0] ?? top;
+  return top;
 }
 
-export function findWeirdItemById(
-  githubId: number
-): WeirdFindItem | null {
-  const repos = getRepositoriesWithGrowth();
-  const reposById = new Map(repos.map((r) => [r.github_id, r]));
-  const repo = repos.find((r) => r.github_id === githubId);
+export function findWeirdItemById(githubId: number): WeirdFindItem | null {
+  const repo = getRepositoriesWithGrowth().find((r) => r.github_id === githubId);
   if (!repo) return null;
-  const item = toWeirdFindItem(repo, new Set());
+  return toWeirdFindItem(repo);
+}
+
+export async function getWeirdFindDetails(
+  githubId: number
+): Promise<WeirdFindDetails | null> {
+  const item = findWeirdItemById(githubId);
   if (!item) return null;
-  return finalizeWeirdCardCopy([item], reposById)[0] ?? null;
+
+  const repo = getRepositoriesWithGrowth().find((r) => r.github_id === githubId);
+  const readme_summary = await fetchReadmeExcerpt(item.full_name);
+
+  return {
+    item,
+    full_description: item.description,
+    ai_summary: repo?.ai_summary?.trim() ?? null,
+    readme_summary,
+  };
 }

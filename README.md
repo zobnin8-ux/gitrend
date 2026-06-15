@@ -126,7 +126,7 @@ npm run start
     /ai/insights     POST — генерация AI-отчёта
     /ai/insights/linkedin-post  POST — перегенерация LinkedIn-поста
     /weird           GET  — список weird finds
-    /weird/content   POST — AI: описание + посты для карточки
+    /weird/details   GET  — детали для drawer
   /insights          AI-инсайты по GitHub-трендам
   /weird             Weird GitHub Finds (алиас /weird-finds → redirect)
   /popular, /trending/*, /new, /favorites, /search, /repo/[id]
@@ -149,8 +149,8 @@ npm run start
   linkedin-post-quality.ts  Проверка качества LinkedIn-поста
   linkedin-surprising-insight.ts  Извлечение most_surprising_insight
   weird.ts              Скоринг и отбор Weird Finds
-  weird-card-copy.ts    Короткие «Что это?» / «Почему интересно?» для карточек
-  weird-ai.ts           OpenAI для weird-карточек и weekly-radar export
+  weird-short-description.ts  Короткие описания для карточек (40–100 символов)
+  weird-ai.ts           OpenAI для weekly-radar telegramPost (Radar only)
   data-maturity.ts      Зрелость данных (server)
   repository-display.ts Русское описание для таблицы
   insights-export.ts    Экспорт MD / JSON / ChatGPT
@@ -190,31 +190,20 @@ LinkedIn-поста (не пересказ категории).
 
 ## Weird Finds
 
-Раздел `/weird` — entertainment-слой поверх тех же данных GitHub: странные,
-смешные и неожиданно популярные репозитории (не market intelligence).
+Раздел `/weird` — **discovery gallery**: странные репозитории без аналитики и storytelling.
 
 ### Карточки
 
-Каждая карточка отвечает на два разных вопроса:
+Только: название, категория, **короткое описание** (40–100 символов), звёзды, рост за 7d, weird score.
 
-| Блок | Содержание | Лимит |
-|------|------------|-------|
-| **Что это?** | Одно короткое предложение — что делает репозиторий | 140 символов, 2 строки в UI |
-| **Почему интересно?** | Уникальная причина отбора (рост, категория, странная идея) | 220 символов, 3 строки в UI |
+Клик по карточке → **боковой drawer** с полным описанием, AI-summary, README, topics и метриками.
 
-Тексты генерируются детерминированно из метрик репозитория (`lib/weird-card-copy.ts`);
-при AI-регенерации — валидация и fallback. Повторяющиеся generic-фразы запрещены.
-
-### Фильтры и категории
-
-- Фильтры: Most Weird, Fastest Growing, Most Starred, Most Discussed
-- Категории: desktop-pets, developer-humor, useless-brilliant, retro-computing,
-  ai-oddities, visual-experiments, internet-culture, unexpected-tools
+Storytelling («почему это забавно») — **только** в `weirdFindOfTheWeek.telegramPost` для Радара, не в UI GitTrend.
 
 ### API
 
 - `GET /api/weird?filter=&category=&limit=` — список карточек
-- `POST /api/weird/content` — `{ github_id, type?: "what_is_this"|"attention"|"linkedin"|"telegram"|"all" }`
+- `GET /api/weird/details?github_id=` — детали для drawer
 
 ## Источники данных (GitHub)
 
@@ -250,10 +239,25 @@ reports/weekly-radar.json
 1–3 **тренда** (не отдельные репозитории): заголовок, summary, whyTrending,
 категория, signalStrength, список repos. Если достойных трендов нет — `"trends": []`.
 
-Опционально: **`weirdFindOfTheWeek`** — один «странный GitHub недели» для
-entertainment-рубрики «Радара будущего» (поля: `whatIsIt`, `whyInteresting`,
-`telegramTitle`, `telegramPost`, метрики). Генерируется из локальной БД;
-при `OPENAI_API_KEY` — AI-контент для Telegram.
+Опционально: **`weirdFindOfTheWeek`** — один «странный GitHub недели» для Радара
+(`shortDescription`, `telegramTitle`, `telegramPost`, метрики). Storytelling только в `telegramPost`.
+
+```json
+{
+  "title": "Desktop Goose",
+  "repo": "user/repo",
+  "url": "https://github.com/user/repo",
+  "category": "Desktop Pets",
+  "shortDescription": "Кот, который живёт поверх окон рабочего стола.",
+  "stars": 1200,
+  "weeklyGrowth": 45,
+  "weirdScore": 72,
+  "telegramTitle": "Странный GitHub недели: desktop goose",
+  "telegramPost": "На этой неделе в GitHub..."
+}
+```
+
+GitTrend UI **не** показывает weekly-победителя — только галерея `/weird`. Radar публикует `telegramPost` в воскресенье 19:00.
 
 ### Локально
 

@@ -4,8 +4,6 @@ import {
   isWeirdAiEnabled,
 } from "@/lib/weird-ai";
 import { selectTopWeirdFindForExport } from "@/lib/weird";
-import { buildWhatIsThis, WHAT_IS_THIS_UNAVAILABLE } from "@/lib/weird-what-is-this";
-import { getRepositoriesWithGrowth } from "@/lib/analytics";
 import type { WeeklyRadarWeirdFind } from "./types";
 
 const MIN_WEIRD_SCORE = 28;
@@ -19,37 +17,10 @@ function displayTitle(item: WeirdFindItem): string {
     .join(" ");
 }
 
-function buildTelegramPostFallback(
-  item: WeirdFindItem,
-  whatIsIt: string,
-  whyInteresting: string
-): { telegramTitle: string; telegramPost: string } {
-  const title = displayTitle(item);
-  const telegramTitle = `Странный GitHub недели: ${title.toLowerCase()}`;
-
-  const telegramPost = [
-    "🧩 Странный GitHub недели",
-    "",
-    `Название проекта: ${item.full_name}`,
-    "",
-    "Что это:",
-    whatIsIt,
-    "",
-    "Почему попало в радар:",
-    whyInteresting,
-    "",
-    "GitHub:",
-    item.url,
-  ].join("\n");
-
-  return { telegramTitle, telegramPost };
-}
-
 function itemToWeeklyRadarWeirdFind(
   item: WeirdFindItem,
   content: {
-    whatIsIt: string;
-    whyInteresting: string;
+    shortDescription: string;
     telegramTitle: string;
     telegramPost: string;
   }
@@ -59,8 +30,7 @@ function itemToWeeklyRadarWeirdFind(
     repo: item.full_name,
     url: item.url,
     category: item.category_label,
-    whatIsIt: content.whatIsIt,
-    whyInteresting: content.whyInteresting,
+    shortDescription: content.shortDescription,
     stars: item.stars,
     weeklyGrowth: item.growth_7d,
     weirdScore: item.weird_score,
@@ -69,51 +39,20 @@ function itemToWeeklyRadarWeirdFind(
   };
 }
 
-async function buildWeirdFindContent(
-  item: WeirdFindItem
-): Promise<WeeklyRadarWeirdFind | null> {
-  if (isWeirdAiEnabled()) {
-    try {
-      const ai = await generateWeirdRadarWeeklyExport(item);
-      if (
-        ai.whatIsIt === WHAT_IS_THIS_UNAVAILABLE &&
-        !item.description?.trim() &&
-        !item.what_is_this?.trim()
-      ) {
-        return null;
-      }
-      return itemToWeeklyRadarWeirdFind(item, ai);
-    } catch {
-      /* fallback below */
-    }
-  }
-
-  const whatIsIt =
-    item.what_is_this?.trim() ||
-    (() => {
-      const repo = getRepositoriesWithGrowth().find(
-        (r) => r.github_id === item.github_id
-      );
-      return repo ? buildWhatIsThis(repo) : WHAT_IS_THIS_UNAVAILABLE;
-    })();
-
-  if (whatIsIt === WHAT_IS_THIS_UNAVAILABLE) {
-    return null;
-  }
-
-  const whyInteresting = item.why_interesting;
-  const telegram = buildTelegramPostFallback(item, whatIsIt, whyInteresting);
-
-  return itemToWeeklyRadarWeirdFind(item, {
-    whatIsIt,
-    whyInteresting,
-    ...telegram,
-  });
-}
-
-/** Выбирает и оформляет weirdFindOfTheWeek для weekly-radar.json. */
+/** Выбирает ONE winner и оформляет weirdFindOfTheWeek для weekly-radar.json. */
 export async function generateWeirdFindOfTheWeek(): Promise<WeeklyRadarWeirdFind | null> {
   const item = selectTopWeirdFindForExport(MIN_WEIRD_SCORE);
-  if (!item) return null;
-  return buildWeirdFindContent(item);
+  if (!item?.short_description?.trim()) return null;
+
+  if (!isWeirdAiEnabled()) {
+    const content = await generateWeirdRadarWeeklyExport(item);
+    return itemToWeeklyRadarWeirdFind(item, content);
+  }
+
+  try {
+    const content = await generateWeirdRadarWeeklyExport(item);
+    return itemToWeeklyRadarWeirdFind(item, content);
+  } catch {
+    return null;
+  }
 }

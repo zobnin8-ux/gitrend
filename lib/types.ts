@@ -280,8 +280,7 @@ export interface WeirdFindItem {
   category: WeirdCategoryId;
   category_label: string;
   weird_score: number;
-  what_is_this: string;
-  why_interesting: string;
+  short_description: string;
   score_breakdown: {
     novelty: number;
     unexpectedness: number;
@@ -292,21 +291,18 @@ export interface WeirdFindItem {
   };
 }
 
-export interface WeirdFindOfWeek {
-  item: WeirdFindItem;
-  week_key: string;
-  what_is_this?: string;
-  attention?: string;
-  linkedin_post?: string;
-  telegram_post?: string;
-}
-
 export interface WeirdFindsResponse {
   items: WeirdFindItem[];
-  find_of_week: WeirdFindOfWeek | null;
   total_candidates: number;
   filter: WeirdFilterId;
   category: WeirdCategoryId | "all";
+}
+
+export interface WeirdFindDetails {
+  item: WeirdFindItem;
+  full_description: string | null;
+  ai_summary: string | null;
+  readme_summary: string | null;
 }
 
 export interface RepositoryFilters {

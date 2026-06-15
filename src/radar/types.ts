@@ -31,14 +31,13 @@ export interface WeeklyRadarTrend {
   repos: WeeklyRadarRepo[];
 }
 
-/** Странный GitHub недели — отдельный entertainment-блок для «Радара будущего». */
+/** Странный GitHub недели — entertainment для «Радара будущего» (storytelling в telegramPost). */
 export interface WeeklyRadarWeirdFind {
   title: string;
   repo: string;
   url: string;
   category: string;
-  whatIsIt: string;
-  whyInteresting: string;
+  shortDescription: string;
   stars: number;
   weeklyGrowth: number;
   weirdScore: number;
