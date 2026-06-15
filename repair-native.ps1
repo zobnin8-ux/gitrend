@@ -40,4 +40,4 @@ Write-Host "Reinstalling better-sqlite3..."
 & $npmCmd install better-sqlite3@11.8.1 --force
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "Done. Double-click Gitrend.lnk in the project folder."
+Write-Host "Done. Double-click GitHub Trends.lnk in the project folder."

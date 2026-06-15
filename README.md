@@ -75,7 +75,7 @@ OPENAI_API_KEY=          # для русских описаний и AI-инса
 npm run launcher:setup
 ```
 
-Дальше — двойной клик по **`Gitrend.lnk`** в корне проекта (как `Jarvis.lnk` в Jarvis):
+Дальше — двойной клик по **`GitHub Trends.lnk`** в корне проекта (иконка приложения, имя видно сразу):
 
 - без окна терминала;
 - автоматическая сборка при изменении кода;
@@ -141,7 +141,7 @@ npm run start
   github-trends.db      Локальная БД (в .gitignore)
 
 launch-app.ps1          Лаунчер Windows (вызывается из Gitrend.exe)
-Gitrend.lnk             Ярлык запуска (npm run launcher:setup)
+GitHub Trends.lnk         Ярлык запуска (npm run launcher:shortcut)
 launcher/               exe + vbs
 obsidian/Gitrend.md     Заметка для Obsidian
 ```
