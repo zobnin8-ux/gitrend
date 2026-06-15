@@ -1,24 +1,21 @@
-# Creates Gitrend.lnk in project root (same as Jarvis.lnk in Jarvis)
+# Creates Gitrend.lnk in project root — always via Gitrend.vbs (no console window).
 $ErrorActionPreference = "Stop"
 
 $LauncherDir = $PSScriptRoot
 $ProjectRoot = Split-Path $LauncherDir -Parent
-$ExePath = Join-Path $LauncherDir "Gitrend.exe"
 $VbsPath = Join-Path $LauncherDir "Gitrend.vbs"
 
-if (Test-Path $ExePath) {
-  $Target = $ExePath
-} elseif (Test-Path $VbsPath) {
-  $Target = $VbsPath
-} else {
-  Write-Error "Nothing to launch. Run: npm run launcher:build"
+if (-not (Test-Path $VbsPath)) {
+  Write-Error "Gitrend.vbs not found in launcher folder."
   exit 1
 }
 
 $shell = New-Object -ComObject WScript.Shell
 $link = $shell.CreateShortcut((Join-Path $ProjectRoot "Gitrend.lnk"))
-$link.TargetPath = $Target
+$link.TargetPath = $env:ComSpec
+$link.Arguments = "/c wscript.exe //B //Nologo `"$VbsPath`""
 $link.WorkingDirectory = $LauncherDir
+$link.WindowStyle = 7
 $link.Description = "GitHub Trends Tracker"
 $link.Save()
 

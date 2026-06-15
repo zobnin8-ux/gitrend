@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 
 $projectDir = if ($PSScriptRoot) { $PSScriptRoot } else { "D:\Gitrend" }
 $port = 3000
-$url = "http://127.0.0.1:$port"
+$url = "http://localhost:$port"
 $dataDir = Join-Path $projectDir "data"
 $logFile = Join-Path $dataDir "launch.log"
 $serverLog = Join-Path $dataDir "server.log"

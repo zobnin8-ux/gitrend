@@ -74,6 +74,14 @@ OPENAI_API_KEY=sk-...
 > [!tip] SSL при git push
 > `git config --global http.sslBackend schannel` или `GIT_SSL_NO_VERIFY=true` в `.env.local`
 
+> [!warning] Avast / антивирус
+> Если браузер пишет «не удаётся получить доступ» или блокирует `Gitrend.exe`:
+> 1. **Исключения Avast** → добавить папку `D:\Gitrend`, `launcher\Gitrend.exe`, `node.exe`
+> 2. **Web Shield** → исключение для `http://localhost:3000`
+> 3. Если quarantine забрал exe — восстановить и «Don't scan again»
+> 4. Пересобрать: `npm run launcher:setup`
+> Проект уже подхватывает `NODE_EXTRA_CA_CERTS` из `%USERPROFILE%\node-ca\avast-root-ca.pem` при наличии файла.
+
 ---
 
 ## Разделы приложения

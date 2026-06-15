@@ -8,7 +8,7 @@ const launcherDir = process.pkg
   : __dirname;
 const PROJECT_ROOT = path.resolve(launcherDir, "..");
 const PORT = 3000;
-const URL = `http://127.0.0.1:${PORT}`;
+const URL = `http://localhost:${PORT}`;
 
 function showError(message) {
   try {
@@ -102,6 +102,7 @@ async function main() {
   }
 
   openBrowser();
+  process.exit(0);
 }
 
 main().catch(() => {
