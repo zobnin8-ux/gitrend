@@ -271,17 +271,32 @@ function Test-ServerAlreadyUp([string]$checkUrl) {
 Write-Log "===== START ====="
 Set-Location $projectDir
 
-# Double-click guard: if another launch is in progress, just open browser
+# Double-click guard: if another launch is in progress, wait for it to finish
 if (Test-Path $lockFile) {
     $lockAge = (Get-Date) - (Get-Item $lockFile).LastWriteTime
-    if ($lockAge.TotalMinutes -lt 8) {
-        Write-Log "Launch already in progress (${lockAge}s) - opening browser only"
+    if ($lockAge.TotalMinutes -lt 10) {
+        $elapsed = [int]$lockAge.TotalSeconds
+        $maxWait = 180
+        $remaining = [Math]::Max(20, $maxWait - $elapsed)
+        Write-Log "Launch already in progress (${elapsed}s ago) - waiting up to ${remaining}s for server..."
+
         if (Test-ServerAlreadyUp $url) {
             Open-Browser $url
             exit 0
         }
-        Write-Log "Server not ready yet - wait and retry"
-        Show-Error "GitHub Trends" "Application is still starting. Wait 30 seconds and click Start again."
+
+        if (Wait-ForServer $url $remaining) {
+            Open-Browser $url
+            exit 0
+        }
+
+        Write-Log "Server not ready after waiting ${remaining}s"
+        Show-Error "GitHub Trends" @"
+Application is still starting (build may take 1-2 minutes on first run).
+
+Wait 30 seconds and click the shortcut once — do not double-click.
+Log: $logFile
+"@
         exit 1
     }
     Remove-Item $lockFile -Force -ErrorAction SilentlyContinue

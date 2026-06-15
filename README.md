@@ -29,7 +29,7 @@
 - **Русские описания репозиториев** — в таблице показывается AI-описание на
   русском (до 4 строк, tooltip с полным текстом и оригиналом с GitHub).
 - **AI-инсайты** (`/insights`) — аналитический отчёт по трендам: сигналы рынка,
-  root cause, идеи контента, экспорт Markdown / JSON / ChatGPT.
+  root cause, идеи контента, **LinkedIn Post** (EN/RU), экспорт Markdown / JSON / ChatGPT.
 - **Зрелость данных** — индикатор надёжности AI-анализа по объёму истории
   снапшотов.
 
@@ -75,12 +75,15 @@ OPENAI_API_KEY=          # для русских описаний и AI-инса
 npm run launcher:setup
 ```
 
-Дальше — двойной клик по **`GitHub Trends.lnk`** в корне проекта (иконка приложения, имя видно сразу):
+Дальше — двойной клик по **`GitHub Trends.lnk`** в корне проекта (иконка **GIT**, имя видно сразу):
 
 - без окна терминала;
 - автоматическая сборка при изменении кода;
 - браузер открывается сам;
 - при закрытии последней вкладки сервер останавливается.
+
+> **Один клик** — не двойной. Если сборка идёт 1–2 минуты, подождите; повторный клик
+> дождётся готовности сервера (см. `data/launch.log`).
 
 Починка SQLite после смены Node: `npm run rebuild:native` или `repair-native.ps1`.
 
@@ -118,6 +121,7 @@ npm run start
     /repositories    GET  — список репозиториев с ростом и фильтрами
     /favorites       GET/POST — избранное
     /ai/insights     POST — генерация AI-отчёта
+    /ai/insights/linkedin-post  POST — перегенерация LinkedIn-поста
   /insights          AI-инсайты по GitHub-трендам
   /popular, /trending/*, /new, /favorites, /search, /repo/[id]
 
@@ -125,6 +129,7 @@ npm run start
   RepositoryTable       Таблица репозиториев
   ClampedDescription    Многострочное описание + tooltip
   InsightsView          UI AI-отчёта
+  LinkedInPostSection   LinkedIn-пост (EN/RU, Copy, Regenerate)
   DataMaturityBlock     Блок «Зрелость данных»
   GrowthChart, Filters, StatsCards, …
 
@@ -133,6 +138,7 @@ npm run start
   sqlite.ts             SQLite-схема и запросы
   analytics.ts          Расчёт роста
   ai.ts                 OpenAI: описания и TrendInsights
+  linkedin-post-quality.ts  Проверка качества LinkedIn-поста
   data-maturity.ts      Зрелость данных (server)
   repository-display.ts Русское описание для таблицы
   insights-export.ts    Экспорт MD / JSON / ChatGPT
@@ -140,9 +146,9 @@ npm run start
 /data
   github-trends.db      Локальная БД (в .gitignore)
 
-launch-app.ps1          Лаунчер Windows (вызывается из Gitrend.exe)
-GitHub Trends.lnk         Ярлык запуска (npm run launcher:shortcut)
-launcher/               exe + vbs
+launch-app.ps1          Лаунчер Windows (вызывается из Gitrend.vbs)
+GitHub Trends.lnk       Ярлык запуска (npm run launcher:shortcut)
+launcher/               Gitrend.vbs, gitrend-icon.png, Gitrend.ico
 obsidian/Gitrend.md     Заметка для Obsidian
 ```
 
@@ -150,6 +156,17 @@ obsidian/Gitrend.md     Заметка для Obsidian
 
 Раздел `/insights` формирует структурированный отчёт: сигналы рынка, trend health,
 root cause (драйверы, импликации, misconceptions), идеи контента для ZobninAI.
+
+### LinkedIn Post
+
+Готовый пост для LinkedIn на `/insights` (English / Русский):
+
+- синтез **полного отчёта** (executive summary, signals, implications, narrative shifts) — не пересказ названия категории;
+- двухшаговая генерация: key insight extraction → пост с интерпретацией;
+- длина **200–600 слов** (цель 250–450), голос founder/analyst;
+- проверка качества (запрещённые generic-фразы, reasoning, ссылки на репозитории);
+- кнопки **Copy** и **Regenerate**; кэш вместе с отчётом.
+
 Блок **«Зрелость данных»** показывает, насколько истории снапшотов достаточно
 для уверенных выводов. Экспорт: Markdown, JSON, ChatGPT.
 

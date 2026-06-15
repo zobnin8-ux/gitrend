@@ -8,7 +8,8 @@ $ProjectRoot = Split-Path $LauncherDir -Parent
 $VbsPath = Join-Path $LauncherDir "Gitrend.vbs"
 $ShortcutPath = Join-Path $ProjectRoot "GitHub Trends.lnk"
 $LegacyShortcut = Join-Path $ProjectRoot "Gitrend.lnk"
-$PngPath = Join-Path $ProjectRoot "app\icon.png"
+$PngPath = Join-Path $LauncherDir "gitrend-icon.png"
+$FallbackPngPath = Join-Path $ProjectRoot "app\icon.png"
 $IcoPath = Join-Path $LauncherDir "Gitrend.ico"
 
 if (-not (Test-Path $VbsPath)) {
@@ -16,37 +17,96 @@ if (-not (Test-Path $VbsPath)) {
   exit 1
 }
 
-function Ensure-LauncherIcon {
-  if (-not (Test-Path $PngPath)) {
-    return $null
-  }
+function Convert-PngToIco {
+  param(
+    [Parameter(Mandatory = $true)][string]$SourcePng,
+    [Parameter(Mandatory = $true)][string]$DestIco
+  )
 
-  $pngTime = (Get-Item $PngPath).LastWriteTimeUtc
-  if ((Test-Path $IcoPath) -and (Get-Item $IcoPath).LastWriteTimeUtc -ge $pngTime) {
-    return $IcoPath
-  }
-
-  $bitmap = [System.Drawing.Bitmap]::FromFile($PngPath)
+  $png = [System.Drawing.Image]::FromFile($SourcePng)
   try {
-    $hIcon = $bitmap.GetHicon()
-    $icon = [System.Drawing.Icon]::FromHandle($hIcon)
-    try {
-      $stream = [System.IO.File]::Create($IcoPath)
+    $sizes = @(16, 32, 48, 64, 128, 256)
+    $imageData = New-Object System.Collections.Generic.List[byte[]]
+
+    foreach ($size in $sizes) {
+      $bmp = New-Object System.Drawing.Bitmap $size, $size
       try {
-        $icon.Save($stream)
+        $g = [System.Drawing.Graphics]::FromImage($bmp)
+        try {
+          $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+          $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+          $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+          $g.Clear([System.Drawing.Color]::Transparent)
+          $g.DrawImage($png, 0, 0, $size, $size)
+        }
+        finally {
+          $g.Dispose()
+        }
+
+        $ms = New-Object System.IO.MemoryStream
+        try {
+          $bmp.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
+          $imageData.Add($ms.ToArray())
+        }
+        finally {
+          $ms.Dispose()
+        }
       }
       finally {
-        $stream.Close()
+        $bmp.Dispose()
       }
     }
+
+    $stream = [System.IO.File]::Create($DestIco)
+    try {
+      $writer = New-Object System.IO.BinaryWriter($stream)
+      $writer.Write([UInt16]0)
+      $writer.Write([UInt16]1)
+      $writer.Write([UInt16]$sizes.Count)
+
+      $offset = 6 + ($sizes.Count * 16)
+      foreach ($i in 0..($sizes.Count - 1)) {
+        $size = $sizes[$i]
+        $bytes = $imageData[$i]
+        $writer.Write([Byte]([Math]::Min($size, 255)))
+        $writer.Write([Byte]([Math]::Min($size, 255)))
+        $writer.Write([Byte]0)
+        $writer.Write([Byte]0)
+        $writer.Write([UInt16]1)
+        $writer.Write([UInt16]32)
+        $writer.Write([UInt32]$bytes.Length)
+        $writer.Write([UInt32]$offset)
+        $offset += $bytes.Length
+      }
+
+      foreach ($bytes in $imageData) {
+        $writer.Write($bytes)
+      }
+
+      $writer.Flush()
+    }
     finally {
-      $icon.Dispose()
+      $stream.Close()
     }
   }
   finally {
-    $bitmap.Dispose()
+    $png.Dispose()
+  }
+}
+
+function Ensure-LauncherIcon {
+  $sourcePng = if (Test-Path $PngPath) { $PngPath } elseif (Test-Path $FallbackPngPath) { $FallbackPngPath } else { $null }
+  if (-not $sourcePng) {
+    return $null
   }
 
+  $pngTime = (Get-Item $sourcePng).LastWriteTimeUtc
+  $icoOk = (Test-Path $IcoPath) -and ((Get-Item $IcoPath).Length -gt 1024) -and ((Get-Item $IcoPath).LastWriteTimeUtc -ge $pngTime)
+  if ($icoOk) {
+    return $IcoPath
+  }
+
+  Convert-PngToIco -SourcePng $sourcePng -DestIco $IcoPath
   return $IcoPath
 }
 
@@ -66,6 +126,15 @@ $link.Save()
 
 if (Test-Path $LegacyShortcut) {
   Remove-Item $LegacyShortcut -Force
+}
+
+$desktop = [Environment]::GetFolderPath("Desktop")
+$legacyDesktop = Join-Path $desktop "GitHub Trends.lnk"
+$legacyStopDesktop = Join-Path $desktop "GitHub Trends - Stop.lnk"
+foreach ($old in @($legacyDesktop, $legacyStopDesktop)) {
+  if (Test-Path $old) {
+    Remove-Item $old -Force
+  }
 }
 
 Write-Host "OK: $ShortcutPath"

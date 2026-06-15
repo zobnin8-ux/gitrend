@@ -9,6 +9,9 @@ import type {
   LinkedInPost,
 } from "./types";
 import { computeTopicMetrics } from "./trend-metrics";
+import { checkLinkedInPostQuality as validateLinkedInPost } from "./linkedin-post-quality";
+
+export { checkLinkedInPostQuality } from "./linkedin-post-quality";
 
 const OPENAI_API = "https://api.openai.com/v1/chat/completions";
 const MODEL = "gpt-4o-mini";
@@ -160,18 +163,20 @@ ROOT CAUSE INTELLIGENCE — недостаточно определить тре
 5. Смену нарратива (narrative_shifts: old_narrative, new_narrative).
 6. Один главный вывод недели (insight_of_the_week) — самый сильный кандидат для публикации.
 
-LINKEDIN POST (linkedinPost) — отдельный готовый пост для LinkedIn на основе САМОГО СИЛЬНОГО сигнала (insight_of_the_week, затем top market_signals / main_trends). Не пересказывай все тренды — один фокус.
-- english: 150–300 слов, plain text, готов к публикации. Структура: (1) Hook, (2) Signal — что обнаружил GitTrend, (3) Why it matters, (4) Personal takeaway — голос founder/builder, без хайпа и маркетинга, (5) Source footer в конце:
+LINKEDIN POST (linkedinPost) — синтез ПОЛНОГО отчёта, НЕ пересказ названия категории.
+Порядок работы: прочитай executive_summary, insight_of_the_week, market_signals, hidden_signals, future_trends, trend_drivers, market_implications, second_order_effects, narrative_shifts → выдели самый интересный вывод → напиши пост с ИНТЕРПРЕТАЦИЕЙ (почему важно, что меняется, к чему ведёт).
+ЗАПРЕЩЕНО: «AI agents are growing», «this trend is important», «developers are interested», «the future looks promising», пересказ только category name без reasoning.
+english: 250–450 слов (минимум 200, максимум 600), plain text, голос founder/analyst/observer. Структура: (1) Hook с неожиданным углом, (2) What happened — конкретный сигнал из отчёта, (3) Why it matters — market implication / driver, (4) Larger shift — narrative_shift или second_order_effect, (5) Practical takeaway, (6) Source footer:
 Source:
 GitTrend Weekly Analysis
 Based on GitHub repository growth signals and trend clustering.
 Analyzed: [N] repositories
 Primary category: [category]
-- russian: прямой перевод english (та же структура, тот же смысл). НЕ генерируй два независимых поста.
-- sourceCategory: категория главного сигнала (например AI Agents, MCP, Developer Tools).
-- analyzedRepositories: число из repositories_count во входных данных.
+russian: прямой перевод english (не отдельный пост).
+sourceCategory: тема главного вывода, не просто label категории.
+analyzedRepositories: repositories_count из входных данных.
 
-Работай как технологический аналитик. Не ограничивайся пересказом данных. Отвечай: почему растёт, что изменилось, что означает, какие последствия, что люди понимают неправильно.
+Работай как технологический аналитик.
 
 Для content_recommendations (LinkedIn, Instagram, Telegram) добавляй why_now — «Почему это важно именно сейчас».
 
@@ -367,7 +372,12 @@ export async function generateTrendInsights(
     throw new Error("Не удалось разобрать JSON-ответ OpenAI");
   }
 
-  return normalizeInsights(parsed, compact.length);
+  const report = normalizeInsights(parsed, compact.length);
+  // Dedicated pipeline: full report → key insight extraction → LinkedIn post
+  report.linkedinPost = await regenerateLinkedInPost(report, compact.length, {
+    allowFallback: true,
+  });
+  return report;
 }
 
 function openAiErrorMessage(err: unknown): string {
@@ -645,12 +655,63 @@ function normalizeLinkedInPost(
   };
 }
 
-const LINKEDIN_POST_SYSTEM_PROMPT = `You write one high-quality LinkedIn post based on GitHub market intelligence.
+const LINKEDIN_POST_TARGET_MIN = 250;
+const LINKEDIN_POST_MAX_RETRIES = 3;
+const LINKEDIN_POST_TIMEOUT_MS = 90_000;
 
-Rules:
-- Focus on the SINGLE strongest signal in the report (insight_of_the_week first, then top market_signals).
-- Do NOT summarize all trends.
-- english: 150-300 words, plain text, ready to publish. Structure: (1) Hook, (2) Signal, (3) Why it matters, (4) Personal takeaway (founder/builder voice, no hype, no marketing fluff), (5) Source footer at the end exactly in this format:
+const KEY_INSIGHT_EXTRACTION_PROMPT = `You extract the single most publishable conclusion from a GitHub market intelligence report.
+
+Do NOT pick the trend category label. Pick the most interesting INTERPRETATION from:
+executive_summary, insight_of_the_week, market_signals, hidden_signals, future_trends, trend_drivers, market_implications, second_order_effects, narrative_shifts.
+
+Return only valid JSON:
+{
+  "primary_conclusion": "one sentence — non-obvious interpretation, not category restatement",
+  "strongest_signal": "specific signal with evidence from report",
+  "why_it_matters": "market implication or driver",
+  "larger_shift": "narrative shift or second-order effect",
+  "practical_takeaway": "what builders/founders should conclude",
+  "evidence_repositories": ["owner/repo", ...],
+  "source_category": "topic of the insight (not generic label only)",
+  "hooks_to_avoid": ["generic phrases to NOT use in the post"]
+}`;
+
+const LINKEDIN_POST_SYSTEM_PROMPT = `You are a technology founder and market analyst writing a LinkedIn post.
+
+You receive:
+1) Full AI Insights report (JSON)
+2) Pre-extracted key insight (JSON) — USE THIS as the core angle. Do not ignore it.
+
+Your job is NOT to restate a trend category name. Synthesize the extracted insight into one original observation grounded in report evidence.
+
+The post must answer:
+1. What happened? (specific signal)
+2. Why is it important? (interpretation)
+3. What larger shift does it indicate?
+4. What practical conclusion follows?
+5. Why should someone care?
+
+VOICE: professional founder / builder / market analyst. Original observation. No hype. No marketing fluff.
+
+FORBIDDEN (never write these or close paraphrases):
+- "AI agents are growing."
+- "This trend is becoming important."
+- "Developers are interested."
+- "The future looks promising."
+- "This technology may change everything."
+- Posts that only rename the category without reasoning.
+
+REQUIRED DEPTH: reference actual report findings — strongest signal, market implication, hidden signal, narrative shift, second-order effect, insight of the week. Cite repository names where relevant.
+
+LENGTH: english must be 250–450 words (minimum 200, maximum 600).
+
+STRUCTURE (plain text, blank lines between sections):
+1. Hook — unexpected angle, not generic
+2. What happened — specific signal from report data
+3. Why it matters — interpretation using trend_drivers / market_implications
+4. Larger shift — narrative_shift or second_order_effect
+5. Personal takeaway — builder/founder perspective
+6. Source footer (exact format):
 
 Source:
 GitTrend Weekly Analysis
@@ -658,42 +719,72 @@ Based on GitHub repository growth signals and trend clustering.
 Analyzed: N repositories
 Primary category: Category Name
 
-- russian: direct translation of english (same structure, same meaning). NOT an independent post.
-- sourceCategory: primary category of the main signal (e.g. AI Agents, MCP, Developer Tools).
-- Use real data from the report. No generic AI hype or empty motivation.
+russian: direct translation of english (same structure, same meaning). NOT an independent post.
 
-Return only valid JSON.`;
+QUALITY GATE before returning:
+- Does the post contain real insight?
+- Does it explain why the trend matters?
+- Does it include reasoning?
+- Could a thoughtful human analyst have written it?
+- Is it substantially more valuable than simply naming the trend?
+If any answer is No — rewrite before returning.
+
+Return only valid JSON: { "english": string, "russian": string, "sourceCategory": string, "analyzedRepositories": number }`;
+
+interface LinkedInKeyInsight {
+  primary_conclusion: string;
+  strongest_signal: string;
+  why_it_matters: string;
+  larger_shift: string;
+  practical_takeaway: string;
+  evidence_repositories: string[];
+  source_category: string;
+  hooks_to_avoid: string[];
+}
 
 function buildLinkedInPostContext(
   report: TrendInsights,
   analyzedRepositories: number
 ): string {
-  return JSON.stringify({
-    analyzed_repositories: analyzedRepositories,
-    generated_at: report.generated_at,
-    executive_summary: report.executive_summary,
-    insight_of_the_week: report.insight_of_the_week,
-    market_signals: (report.market_signals ?? []).slice(0, 5),
-    main_trends: (report.main_trends ?? []).slice(0, 3),
-    trend_drivers: (report.trend_drivers ?? []).slice(0, 3),
-    market_implications: (report.market_implications ?? []).slice(0, 3),
-    fastest_growing_projects: (report.fastest_growing_projects ?? []).slice(0, 5),
-  });
+  return JSON.stringify(
+    {
+      analyzed_repositories: analyzedRepositories,
+      generated_at: report.generated_at,
+      market_temperature: report.market_temperature,
+      executive_summary: report.executive_summary,
+      insight_of_the_week: report.insight_of_the_week,
+      market_signals: report.market_signals ?? [],
+      hidden_signals: report.hidden_signals ?? [],
+      future_trends: report.future_trends ?? [],
+      main_trends: report.main_trends ?? [],
+      trend_drivers: report.trend_drivers ?? [],
+      market_implications: report.market_implications ?? [],
+      second_order_effects: report.second_order_effects ?? [],
+      narrative_shifts: report.narrative_shifts ?? [],
+      market_misconceptions: report.market_misconceptions ?? [],
+      trend_momentum: report.trend_momentum ?? [],
+      trend_lifecycle: report.trend_lifecycle ?? [],
+      changed_since_last_report: report.changed_since_last_report,
+      controversial_takes: report.controversial_takes ?? [],
+      fastest_growing_projects: report.fastest_growing_projects ?? [],
+      emerging_signals: report.emerging_signals ?? [],
+      projects_to_watch: report.projects_to_watch ?? [],
+      possible_hype: report.possible_hype ?? [],
+    },
+    null,
+    0
+  );
 }
 
-export async function regenerateLinkedInPost(
-  report: TrendInsights,
-  analyzedRepositories: number
-): Promise<LinkedInPost> {
+async function callOpenAiJson(
+  system: string,
+  user: string,
+  options?: { temperature?: number; max_tokens?: number }
+): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY is not configured");
   }
-
-  const count =
-    analyzedRepositories > 0
-      ? analyzedRepositories
-      : report.linkedinPost?.analyzedRepositories ?? 0;
 
   let res: Response;
   try {
@@ -704,20 +795,15 @@ export async function regenerateLinkedInPost(
         Authorization: `Bearer ${apiKey}`,
       },
       cache: "no-store",
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(LINKEDIN_POST_TIMEOUT_MS),
       body: JSON.stringify({
         model: MODEL,
-        temperature: 0.5,
-        max_tokens: 1200,
+        temperature: options?.temperature ?? 0.5,
+        max_tokens: options?.max_tokens ?? 2000,
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: LINKEDIN_POST_SYSTEM_PROMPT },
-          {
-            role: "user",
-            content:
-              `Report context (JSON):\n${buildLinkedInPostContext(report, count)}\n\n` +
-              `Return JSON: { "english": string, "russian": string, "sourceCategory": string, "analyzedRepositories": number }`,
-          },
+          { role: "system", content: system },
+          { role: "user", content: user },
         ],
       }),
     });
@@ -734,15 +820,112 @@ export async function regenerateLinkedInPost(
   if (!content) {
     throw new Error("OpenAI вернул пустой ответ");
   }
+  return content;
+}
 
-  let parsed: Partial<LinkedInPost>;
+async function extractLinkedInKeyInsight(
+  report: TrendInsights,
+  analyzedRepositories: number
+): Promise<LinkedInKeyInsight> {
+  const content = await callOpenAiJson(
+    KEY_INSIGHT_EXTRACTION_PROMPT,
+    `Full AI Insights report (JSON):\n${buildLinkedInPostContext(report, analyzedRepositories)}\n\n` +
+      `Return the single most interesting publishable conclusion as JSON.`,
+    { temperature: 0.35, max_tokens: 900 }
+  );
+
   try {
-    parsed = JSON.parse(content) as Partial<LinkedInPost>;
+    const parsed = JSON.parse(content) as Partial<LinkedInKeyInsight>;
+    return {
+      primary_conclusion: parsed.primary_conclusion?.trim() ?? "",
+      strongest_signal: parsed.strongest_signal?.trim() ?? "",
+      why_it_matters: parsed.why_it_matters?.trim() ?? "",
+      larger_shift: parsed.larger_shift?.trim() ?? "",
+      practical_takeaway: parsed.practical_takeaway?.trim() ?? "",
+      evidence_repositories: Array.isArray(parsed.evidence_repositories)
+        ? parsed.evidence_repositories.filter(Boolean)
+        : [],
+      source_category: parsed.source_category?.trim() ?? "",
+      hooks_to_avoid: Array.isArray(parsed.hooks_to_avoid)
+        ? parsed.hooks_to_avoid.filter(Boolean)
+        : [],
+    };
+  } catch {
+    throw new Error("Не удалось извлечь key insight для LinkedIn post");
+  }
+}
+
+async function requestLinkedInPostGeneration(
+  report: TrendInsights,
+  analyzedRepositories: number,
+  keyInsight: LinkedInKeyInsight,
+  qualityFeedback?: string
+): Promise<Partial<LinkedInPost>> {
+  const userContent =
+    `Full AI Insights report (JSON):\n${buildLinkedInPostContext(report, analyzedRepositories)}\n\n` +
+    `Extracted key insight (JSON):\n${JSON.stringify(keyInsight, null, 2)}\n\n` +
+    (qualityFeedback
+      ? `PREVIOUS ATTEMPT REJECTED: ${qualityFeedback}\n` +
+        `Regenerate with deeper interpretation. Anchor on primary_conclusion, not category name. ` +
+        `Target ${LINKEDIN_POST_TARGET_MIN}–450 words.\n\n`
+      : "") +
+    `Return JSON: { "english": string, "russian": string, "sourceCategory": string, "analyzedRepositories": number }`;
+
+  const content = await callOpenAiJson(LINKEDIN_POST_SYSTEM_PROMPT, userContent, {
+    temperature: 0.55,
+    max_tokens: 2800,
+  });
+
+  try {
+    return JSON.parse(content) as Partial<LinkedInPost>;
   } catch {
     throw new Error("Не удалось разобрать JSON-ответ OpenAI");
   }
+}
 
-  return normalizeLinkedInPost(parsed, count);
+export async function regenerateLinkedInPost(
+  report: TrendInsights,
+  analyzedRepositories: number,
+  options?: { allowFallback?: boolean }
+): Promise<LinkedInPost> {
+  const count =
+    analyzedRepositories > 0
+      ? analyzedRepositories
+      : report.linkedinPost?.analyzedRepositories ?? 0;
+
+  const keyInsight = await extractLinkedInKeyInsight(report, count);
+
+  let lastReason = "";
+  let lastNormalized: LinkedInPost | null = null;
+  for (let attempt = 0; attempt < LINKEDIN_POST_MAX_RETRIES; attempt++) {
+    const parsed = await requestLinkedInPostGeneration(
+      report,
+      count,
+      keyInsight,
+      attempt > 0 ? lastReason : undefined
+    );
+    const normalized = normalizeLinkedInPost(parsed, count);
+    if (!normalized.sourceCategory && keyInsight.source_category) {
+      normalized.sourceCategory = keyInsight.source_category;
+    }
+    lastNormalized = normalized;
+    const check = validateLinkedInPost(normalized.english);
+    if (check.ok) {
+      return normalized;
+    }
+    lastReason = check.reason ?? "quality check failed";
+  }
+
+  if (options?.allowFallback && lastNormalized) {
+    console.warn(
+      `[LinkedIn] using best attempt after ${LINKEDIN_POST_MAX_RETRIES} retries: ${lastReason}`
+    );
+    return lastNormalized;
+  }
+
+  throw new Error(
+    `LinkedIn post did not pass quality check after ${LINKEDIN_POST_MAX_RETRIES} attempts: ${lastReason}`
+  );
 }
 
 function validSignalType(

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { checkLinkedInPostQuality } from "@/lib/linkedin-post-quality";
 import type { InsightPeriod, LinkedInPost, TrendInsights } from "@/lib/types";
 
 type LinkedInPostTab = "english" | "russian";
@@ -30,6 +31,10 @@ export function LinkedInPostSection({
 
   const post = report.linkedinPost;
   const hasPost = Boolean(post?.english?.trim());
+  const quality = useMemo(
+    () => (post?.english ? checkLinkedInPostQuality(post.english) : null),
+    [post?.english]
+  );
 
   useEffect(() => {
     if (!toast) return;
@@ -97,7 +102,8 @@ export function LinkedInPostSection({
         <div>
           <h2 className="text-lg font-semibold text-slate-800">LinkedIn Post</h2>
           <p className="text-sm text-slate-500">
-            Готовый пост на основе самого сильного сигнала отчёта
+            Синтез выводов отчёта: executive summary, signals, implications,
+            narrative shifts — не пересказ категории
           </p>
         </div>
       </div>
@@ -134,11 +140,11 @@ export function LinkedInPostSection({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {tab === "english" && hasPost && (
+            {hasPost && (
               <>
                 <button
                   type="button"
-                  onClick={() => copyText(post!.english)}
+                  onClick={() => copyText(activeText)}
                   disabled={busy}
                   className="btn-ghost"
                 >
@@ -153,16 +159,6 @@ export function LinkedInPostSection({
                   {regenerating ? "Regenerating…" : "Regenerate"}
                 </button>
               </>
-            )}
-            {tab === "russian" && hasPost && (
-              <button
-                type="button"
-                onClick={() => copyText(post!.russian)}
-                disabled={busy}
-                className="btn-ghost"
-              >
-                Copy
-              </button>
             )}
             {!hasPost && (
               <button
@@ -182,7 +178,15 @@ export function LinkedInPostSection({
             Primary category: {post.sourceCategory}
             {post.analyzedRepositories > 0 &&
               ` · Analyzed: ${post.analyzedRepositories} repositories`}
+            {quality && ` · ${quality.wordCount} words`}
           </p>
+        )}
+
+        {hasPost && quality && !quality.ok && (
+          <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Пост не прошёл проверку качества ({quality.reason}). Нажмите
+            Regenerate для новой версии на основе полного отчёта.
+          </div>
         )}
 
         {error && (
