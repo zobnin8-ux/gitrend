@@ -29,6 +29,7 @@ import {
 } from "@/lib/insights-export";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DataMaturityBlock } from "@/components/DataMaturityBlock";
+import { LinkedInPostSection } from "@/components/LinkedInPostSection";
 
 const PERIODS: { key: InsightPeriod; label: string }[] = [
   { key: "daily", label: "День" },
@@ -508,6 +509,12 @@ export function InsightsView({
             </div>
           )}
           <Report report={report} tab={tab} setTab={setTab} />
+          <LinkedInPostSection
+            report={report}
+            period={period}
+            onUpdate={setReport}
+            disabled={loading}
+          />
         </div>
       )}
     </div>

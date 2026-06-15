@@ -224,6 +224,14 @@ export interface TrendInsights {
     evidence_repositories: string[];
     content_angle: string;
   }[];
+  linkedinPost: LinkedInPost;
+}
+
+export interface LinkedInPost {
+  english: string;
+  russian: string;
+  sourceCategory: string;
+  analyzedRepositories: number;
 }
 
 export interface RepositoryFilters {

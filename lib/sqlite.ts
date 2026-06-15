@@ -358,6 +358,23 @@ export function saveTrendReport(
   ).run(period, payloadHash, reportJson, new Date().toISOString());
 }
 
+export function patchLatestTrendReport(
+  period: string,
+  reportJson: string
+): void {
+  const db = getDb();
+  db.prepare(
+    `UPDATE ai_trend_reports
+     SET report_json = ?
+     WHERE id = (
+       SELECT id FROM ai_trend_reports
+       WHERE period = ?
+       ORDER BY created_at DESC
+       LIMIT 1
+     )`
+  ).run(reportJson, period);
+}
+
 // Последний отчёт за тот же period с другим payload_hash (для сравнения «что изменилось»).
 export function getPreviousTrendReport(
   period: InsightPeriod,
