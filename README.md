@@ -149,7 +149,7 @@ npm run start
   linkedin-post-quality.ts  Проверка качества LinkedIn-поста
   linkedin-surprising-insight.ts  Извлечение most_surprising_insight
   weird.ts              Скоринг и отбор Weird Finds
-  weird-short-description.ts  Короткие описания для карточек (40–100 символов)
+  weird-short-description.ts  Human explanation для карточек (не README summary)
   weird-ai.ts           OpenAI для weekly-radar telegramPost (Radar only)
   data-maturity.ts      Зрелость данных (server)
   repository-display.ts Русское описание для таблицы
@@ -194,7 +194,7 @@ LinkedIn-поста (не пересказ категории).
 
 ### Карточки
 
-Только: название, категория, **короткое описание** (40–100 символов), звёзды, рост за 7d, weird score.
+Только: название, категория, **короткое описание** (30–120 символов, «как объяснил бы друг»), звёзды, рост за 7d, weird score.
 
 Клик по карточке → **боковой drawer** с полным описанием, AI-summary, README, topics и метриками.
 

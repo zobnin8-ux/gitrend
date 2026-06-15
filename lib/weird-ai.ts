@@ -5,8 +5,13 @@ import {
   formatWhatIsThisContextForPrompt,
   isLowQualityProjectData,
 } from "./weird-what-is-this";
-import { buildShortDescription } from "./weird-short-description";
-import type { RepositoryWithGrowth } from "./types";
+import {
+  buildShortDescription,
+  sanitizeShortDescription,
+  formatShortDescriptionPromptContext,
+  HUMAN_SHORT_DESCRIPTION_SYSTEM_PROMPT,
+} from "./weird-short-description";
+import type { RepositoryWithGrowth, WeirdCategoryId } from "./types";
 import { getRepositoriesWithGrowth } from "./analytics";
 
 const OPENAI_API = "https://api.openai.com/v1/chat/completions";
@@ -58,6 +63,19 @@ async function callWeirdAi(system: string, user: string, maxTokens: number): Pro
 
 function getRepoForWeirdItem(item: WeirdFindItem): RepositoryWithGrowth | null {
   return getRepositoriesWithGrowth().find((r) => r.github_id === item.github_id) ?? null;
+}
+
+/** AI human explanation — experience, not README summary. */
+export async function generateHumanShortDescription(
+  repo: RepositoryWithGrowth,
+  category?: WeirdCategoryId
+): Promise<string> {
+  const text = await callWeirdAi(
+    HUMAN_SHORT_DESCRIPTION_SYSTEM_PROMPT,
+    formatShortDescriptionPromptContext(repo),
+    120
+  );
+  return sanitizeShortDescription(text, repo, category);
 }
 
 function radarContext(item: WeirdFindItem, shortDescription: string, readme?: string | null): string {
@@ -114,7 +132,17 @@ export async function generateWeirdRadarWeeklyExport(
   item: WeirdFindItem
 ): Promise<WeirdRadarWeeklyExport> {
   const repo = getRepoForWeirdItem(item);
-  const shortDescription = item.short_description?.trim() || (repo ? buildShortDescription(repo) : "");
+  let shortDescription =
+    item.short_description?.trim() ||
+    (repo ? buildShortDescription(repo, item.category) : "");
+
+  if (isWeirdAiEnabled() && repo) {
+    try {
+      shortDescription = await generateHumanShortDescription(repo, item.category);
+    } catch {
+      shortDescription = buildShortDescription(repo, item.category);
+    }
+  }
 
   if (!isWeirdAiEnabled()) {
     const telegram = buildTelegramPostFallback(item, shortDescription);

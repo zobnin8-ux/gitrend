@@ -241,7 +241,7 @@ function toWeirdFindItem(repo: RepositoryWithGrowth): WeirdFindItem | null {
     category,
     category_label: WEIRD_CATEGORY_LABELS[category],
     weird_score: total,
-    short_description: buildShortDescription(repo),
+    short_description: buildShortDescription(repo, category),
     score_breakdown: breakdown,
   };
 }
