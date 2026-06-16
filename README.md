@@ -31,8 +31,8 @@
 - **AI-инсайты** (`/insights`) — аналитический отчёт по трендам: сигналы рынка,
   root cause, идеи контента, **Most Surprising Insight**, **LinkedIn Post** (EN/RU),
   экспорт Markdown / JSON / ChatGPT.
-- **Weird Finds** (`/weird`) — странные, смешные и неожиданно популярные репозитории:
-  карточки с «Что это?» и «Почему интересно?», фильтры, AI-генерация постов.
+- **Weird Finds** (`/weird`) — discovery gallery странных репозиториев: короткое human explanation,
+  фильтры, drawer с деталями (без storytelling в карточках).
 - **Зрелость данных** — индикатор надёжности AI-анализа по объёму истории
   снапшотов.
 
@@ -125,7 +125,9 @@ npm run start
     /favorites       GET/POST — избранное
     /ai/insights     POST — генерация AI-отчёта
     /ai/insights/linkedin-post  POST — перегенерация LinkedIn-поста
-    /weird           GET  — список weird finds
+    /radar/weekly      GET/POST — чтение / генерация weekly-radar.json
+    /radar/publish     POST — commit + push отчёта на GitHub
+    /weird             GET  — список weird finds
     /weird/details   GET  — детали для drawer
   /insights          AI-инсайты по GitHub-трендам
   /weird             Weird GitHub Finds (алиас /weird-finds → redirect)
@@ -146,8 +148,10 @@ npm run start
   sqlite.ts             SQLite-схема и запросы
   analytics.ts          Расчёт роста
   ai.ts                 OpenAI: описания и TrendInsights
-  linkedin-post-quality.ts  Проверка качества LinkedIn-поста
+  linkedin-post-quality.ts      Валидация LinkedIn-поста
+  linkedin-post-evidence.ts     Evidence brief для поста
   linkedin-surprising-insight.ts  Извлечение most_surprising_insight
+  linkedin-reasoning-safety.ts  Reasoning map + защита от overclaim
   weird.ts              Скоринг и отбор Weird Finds
   weird-short-description.ts  Human explanation для карточек (не README summary)
   weird-ai.ts           OpenAI для weekly-radar telegramPost (Radar only)
@@ -179,10 +183,19 @@ LinkedIn-поста (не пересказ категории).
 
 Готовый пост для LinkedIn на `/insights` (English / Русский):
 
-- синтез **полного отчёта** через `most_surprising_insight` → key insight → **естественная проза** (не отчёт с заголовками);
-- двухшаговая генерация: surprising insight → key insight → пост с интерпретацией;
+**Пайплайн (без смены UI):**
+1. `most_surprising_insight` — якорь «что удивило»
+2. Key insight + **reasoning map** (`observations` / `interpretations` / `hypotheses`)
+3. Естественная проза (не отчёт с заголовками)
+4. Валидация: generic-фразы, section labels, repo evidence, **reasoning safety** (без overclaim)
+
+**Reasoning safety** (`lib/linkedin-reasoning-safety.ts`):
+- **observation** — то, что видно в данных GitTrend (рост, концентрация, репозитории)
+- **interpretation** — осторожное чтение (`may`, `could`, `appears`)
+- **hypothesis** — открытый вопрос или возможность, не факт
+- Отклоняются неподтверждённые claims: saturation, lack of innovation, business adoption, «proves that…»
+
 - длина **200–600 слов** (цель 250–450), голос founder/analyst;
-- проверка качества (запрещённые generic-фразы, section labels, reasoning, repo evidence);
 - кнопки **Copy** и **Regenerate**; кэш вместе с отчётом.
 
 Блок **«Зрелость данных»** показывает, насколько истории снапшотов достаточно
@@ -190,15 +203,18 @@ LinkedIn-поста (не пересказ категории).
 
 ## Weird Finds
 
-Раздел `/weird` — **discovery gallery**: странные репозитории без аналитики и storytelling.
+Раздел `/weird` — **discovery gallery**: «кто вообще сделал такую штуку?», без market intelligence.
+
+**GitTrend** отвечает: *что это?* (human explanation).  
+**Радар будущего** отвечает: *почему это забавно?* — только в `weirdFindOfTheWeek.telegramPost`.
 
 ### Карточки
 
-Только: название, категория, **короткое описание** (30–120 символов, «как объяснил бы друг»), звёзды, рост за 7d, weird score.
+Только: название, категория, **short_description** (30–120 символов, как объяснил бы друг в баре), ⭐, +7d, weird score.
 
-Клик по карточке → **боковой drawer** с полным описанием, AI-summary, README, topics и метриками.
+Не README-summary: без «репозиторий представляет», «инструмент для», «исходный код».
 
-Storytelling («почему это забавно») — **только** в `weirdFindOfTheWeek.telegramPost` для Радара, не в UI GitTrend.
+Клик → **боковой drawer**: GitHub, описание, AI-summary, README, topics, метрики.
 
 ### API
 
@@ -271,7 +287,9 @@ npm run radar:weekly -- --refresh --commit --push  # обновить данны
 
 Workflow `.github/workflows/weekly-radar.yml` — **каждую субботу 18:00 UTC (21:00 МСК)**:
 обновление данных GitHub → генерация → commit `reports/weekly-radar.json`.
-Файл готов к воскресенью утром для проекта «Радар будущего».
+Файл готов к воскресенью для проекта «Радар будущего»:
+- **10:40 МСК** — serious trends (`trends[]`)
+- **19:00 МСК** — «Странный GitHub недели» (`weirdFindOfTheWeek.telegramPost`)
 
 В secrets репозитория нужен `GITHUB_TOKEN` (для Actions создаётся автоматически;
 для Search API достаточно прав public read).
