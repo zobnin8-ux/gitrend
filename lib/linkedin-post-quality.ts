@@ -1,3 +1,10 @@
+import {
+  checkLinkedInReasoningSafety,
+} from "./linkedin-reasoning-safety";
+
+export { checkLinkedInReasoningSafety } from "./linkedin-reasoning-safety";
+export type { LinkedInReasoningMap, ReasoningLevel } from "./linkedin-reasoning-safety";
+
 export interface LinkedInPostValidationContext {
   /** Trend / category titles from the report — post must not read as a summary of these alone */
   categoryLabels?: string[];
@@ -37,6 +44,10 @@ const FORBIDDEN_LINKEDIN_PATTERNS: RegExp[] = [
   /\bbusinesses should (invest|adopt|embrace)\b/i,
   /\bembrace innovation\b/i,
   /\btransform everything\b/i,
+  /\b(showing signs of|signs of) saturation\b/i,
+  /\bmarket is (becoming )?stale\b/i,
+  /\bfail(ing|ed) to innovate\b/i,
+  /\black of innovation\b/i,
 ];
 
 const INTERPRETATION_MARKERS =
@@ -307,6 +318,11 @@ export function checkLinkedInPostQuality(
   const categoryIssue = looksLikeCategorySummary(trimmed, context);
   if (categoryIssue) {
     return { ok: false, reason: categoryIssue, wordCount };
+  }
+
+  const reasoningIssue = checkLinkedInReasoningSafety(trimmed);
+  if (!reasoningIssue.ok) {
+    return { ok: false, reason: reasoningIssue.reason, wordCount };
   }
 
   const surprisingHeadline = context?.surprisingHeadline?.trim();

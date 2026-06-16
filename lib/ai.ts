@@ -15,6 +15,12 @@ import {
   buildLinkedInValidationContext,
 } from "./linkedin-post-quality";
 import {
+  LINKEDIN_REASONING_PROSE_RULES,
+  REASONING_MAP_INSTRUCTIONS,
+  normalizeReasoningMap,
+  type LinkedInReasoningMap,
+} from "./linkedin-reasoning-safety";
+import {
   extractMostSurprisingInsight,
   normalizeMostSurprisingInsight,
 } from "./linkedin-surprising-insight";
@@ -692,9 +698,12 @@ STEP 1 — Answer these from the evidence_brief JSON only:
 
 STEP 2 — Align all fields with the provided most_surprising_insight. The observation must support WHY this is surprising.
 
-STEP 3 — Derive interpretation grounded in that evidence — emphasize the non-obvious angle.
+STEP 3 — Derive interpretation grounded in that evidence — emphasize the non-obvious angle. Use cautious language (may, could, appears).
 
-Do NOT use main_trends category titles as the insight. Do NOT speculate about market overheating, new business models, industry disruption unless the report explicitly supports it.
+STEP 4 — Build reasoning_map (internal classification — never expose labels in final post):
+${REASONING_MAP_INSTRUCTIONS}
+
+Do NOT use main_trends category titles as the insight. Do NOT put market saturation, lack of innovation, business adoption, or investment trends in observations unless evidence_brief explicitly supports comparable repo-level signals.
 
 Return only valid JSON:
 {
@@ -706,14 +715,19 @@ Return only valid JSON:
   "evidence_summary": "2-4 sentences citing repos, signal types, concentration, momentum — NO speculation",
   "evidence_bullets": ["observable fact 1 with repo names", "observable fact 2"],
   "observation": "What was detected — must match surprising insight angle",
-  "interpretation": "Why surprising — ONLY what evidence supports",
-  "broader_implication": "Cautious implication tied to narrative_shift/second_order_effect IF in report",
-  "practical_takeaway": "What to watch — grounded in data",
-  "primary_conclusion": "one sentence — the surprising insight, evidence-based",
+  "interpretation": "Why surprising — cautious (may/could/appears), ONLY what evidence supports",
+  "broader_implication": "Cautious implication — hypothesis-level unless data is direct",
+  "practical_takeaway": "What to watch — grounded in data or framed as open question",
+  "primary_conclusion": "one sentence — surprising insight, evidence-based, no market overclaim",
+  "reasoning_map": {
+    "observations": ["2-4 data-backed facts"],
+    "interpretations": ["1-3 careful readings with hedged language"],
+    "hypotheses": ["1-2 open questions or possible explanations — NOT facts"]
+  },
   "source_sections": ["most_surprising_insight"],
   "evidence_repositories": ["owner/repo"],
   "source_category": "topic of the insight",
-  "hooks_to_avoid": ["unsupported speculation phrases", "category is growing rapidly"]
+  "hooks_to_avoid": ["automation is saturated", "market is stale", "failing to innovate", "proves that"]
 }`;
 
 const LINKEDIN_POST_PROSE_PROMPT = `You transform internal GitTrend analysis into a publish-ready LinkedIn post.
@@ -761,6 +775,13 @@ RULES:
 - Do NOT write like a consulting report
 - russian: direct translation of english
 
+${LINKEDIN_REASONING_PROSE_RULES}
+
+Use reasoning_map from the internal structure:
+- weave observations as factual anchors
+- interpretations with hedging language
+- hypotheses as questions or possibilities — never as conclusions
+
 LENGTH: english 250–450 words (min 200, max 600).
 
 Return only valid JSON: { "english": string, "russian": string, "sourceCategory": string, "analyzedRepositories": number }`;
@@ -778,6 +799,7 @@ interface LinkedInKeyInsight {
   broader_implication: string;
   practical_takeaway: string;
   primary_conclusion: string;
+  reasoning_map: LinkedInReasoningMap;
   source_sections: string[];
   evidence_repositories: string[];
   source_category: string;
@@ -901,7 +923,14 @@ async function extractLinkedInKeyInsight(
   );
 
   try {
-    const parsed = JSON.parse(content) as Partial<LinkedInKeyInsight>;
+    const parsed = JSON.parse(content) as Partial<LinkedInKeyInsight> & {
+      reasoning_map?: Partial<LinkedInReasoningMap>;
+    };
+    const reasoning_map = normalizeReasoningMap(parsed.reasoning_map, {
+      observation: parsed.observation,
+      interpretation: parsed.interpretation,
+      broader: parsed.broader_implication,
+    });
     return {
       concentration: parsed.concentration?.trim() ?? "",
       convergence: parsed.convergence?.trim() ?? "",
@@ -917,6 +946,7 @@ async function extractLinkedInKeyInsight(
       broader_implication: parsed.broader_implication?.trim() ?? "",
       practical_takeaway: parsed.practical_takeaway?.trim() ?? "",
       primary_conclusion: parsed.primary_conclusion?.trim() ?? "",
+      reasoning_map,
       source_sections: Array.isArray(parsed.source_sections)
         ? parsed.source_sections.filter(Boolean)
         : [],
@@ -944,7 +974,14 @@ async function requestLinkedInPostGeneration(
     `Most Surprising Insight (revolve the entire post around this ONE idea):\n` +
     JSON.stringify(surprisingInsight, null, 2) +
     `\n\nInternal analytical structure (transform into natural prose — do NOT expose labels):\n` +
-    JSON.stringify(keyInsight, null, 2) +
+    JSON.stringify(
+      {
+        ...keyInsight,
+        reasoning_map: keyInsight.reasoning_map,
+      },
+      null,
+      2
+    ) +
     `\n\nEvidence reference (weave into sentences):\n` +
     JSON.stringify(
       {
@@ -959,7 +996,9 @@ async function requestLinkedInPostGeneration(
     (qualityFeedback
       ? `PREVIOUS ATTEMPT REJECTED: ${qualityFeedback}\n` +
         `Rewrite leading with what SURPRISED us — not what grew. One surprising idea only. ` +
-        `No category summary. Target ${LINKEDIN_POST_TARGET_MIN}–450 words.\n\n`
+        `No category summary. Separate facts from interpretations and hypotheses. ` +
+        `Soften unsupported claims (may/could/appears) or turn them into questions. ` +
+        `Target ${LINKEDIN_POST_TARGET_MIN}–450 words.\n\n`
       : "") +
     `Return JSON: { "english": string, "russian": string, "sourceCategory": string, "analyzedRepositories": number }`;
 
