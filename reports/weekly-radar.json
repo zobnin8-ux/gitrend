@@ -1,136 +1,17 @@
 {
   "week": "2026-W25",
-  "generatedAt": "2026-06-15T22:47:32.517Z",
-  "trends": [
-    {
-      "title": "Рост AI-агентов для разработки",
-      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +43305 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (ponytail, superpowers, hermes-agent, cc-switch), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
-      "category": "ai-agents",
-      "signalStrength": "high",
-      "repos": [
-        {
-          "name": "ponytail",
-          "url": "https://github.com/DietrichGebert/ponytail",
-          "stars": 15959,
-          "starsDelta": 15212
-        },
-        {
-          "name": "superpowers",
-          "url": "https://github.com/obra/superpowers",
-          "stars": 228744,
-          "starsDelta": 7923
-        },
-        {
-          "name": "hermes-agent",
-          "url": "https://github.com/NousResearch/hermes-agent",
-          "stars": 194404,
-          "starsDelta": 7911
-        },
-        {
-          "name": "cc-switch",
-          "url": "https://github.com/farion1231/cc-switch",
-          "stars": 101629,
-          "starsDelta": 6969
-        },
-        {
-          "name": "agency-agents",
-          "url": "https://github.com/msitarzewski/agency-agents",
-          "stars": 113484,
-          "starsDelta": 5290
-        }
-      ]
-    },
-    {
-      "title": "Ускорение проектов вокруг LLM",
-      "summary": "Сразу 5 независимых репозиториев в категории «LLM и языковые модели» показали заметный недельный рост (суммарно +10821 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (MoneyPrinterTurbo, caveman, UniRL, text-humanizer), что указывает на интерес сообщества к направлению «LLM и языковые модели», а не к одному вирусному репозиторию.",
-      "category": "llm",
-      "signalStrength": "high",
-      "repos": [
-        {
-          "name": "MoneyPrinterTurbo",
-          "url": "https://github.com/harry0703/MoneyPrinterTurbo",
-          "stars": 88265,
-          "starsDelta": 6729
-        },
-        {
-          "name": "caveman",
-          "url": "https://github.com/JuliusBrussee/caveman",
-          "stars": 72996,
-          "starsDelta": 3093
-        },
-        {
-          "name": "UniRL",
-          "url": "https://github.com/Tencent-Hunyuan/UniRL",
-          "stars": 598,
-          "starsDelta": 344
-        },
-        {
-          "name": "text-humanizer",
-          "url": "https://github.com/khrisat/text-humanizer",
-          "stars": 672,
-          "starsDelta": 334
-        },
-        {
-          "name": "GordenSuperPPTSkills",
-          "url": "https://github.com/GordenSun/GordenSuperPPTSkills",
-          "stars": 885,
-          "starsDelta": 321
-        }
-      ]
-    },
-    {
-      "title": "Синхронный рост проектов: инструменты разработки",
-      "summary": "Сразу 5 независимых репозиториев в категории «инструменты разработки» показали заметный недельный рост (суммарно +3173 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (Void-Tools-v2.0, chinese-buy-us-stock-guide, qiaomu-goal-meta-skill, xiaohu-video-translate), что указывает на интерес сообщества к направлению «инструменты разработки», а не к одному вирусному репозиторию.",
-      "category": "developer-tools",
-      "signalStrength": "high",
-      "repos": [
-        {
-          "name": "Void-Tools-v2.0",
-          "url": "https://github.com/V0id-v2/Void-Tools-v2.0",
-          "stars": 2209,
-          "starsDelta": 1622
-        },
-        {
-          "name": "chinese-buy-us-stock-guide",
-          "url": "https://github.com/zgwl/chinese-buy-us-stock-guide",
-          "stars": 4386,
-          "starsDelta": 908
-        },
-        {
-          "name": "qiaomu-goal-meta-skill",
-          "url": "https://github.com/joeseesun/qiaomu-goal-meta-skill",
-          "stars": 611,
-          "starsDelta": 320
-        },
-        {
-          "name": "xiaohu-video-translate",
-          "url": "https://github.com/xiaohuailabs/xiaohu-video-translate",
-          "stars": 501,
-          "starsDelta": 188
-        },
-        {
-          "name": "ideogram4",
-          "url": "https://github.com/ideogram-oss/ideogram4",
-          "stars": 2058,
-          "starsDelta": 135
-        }
-      ]
-    }
-  ],
+  "generatedAt": "2026-06-20T19:09:43.513Z",
+  "trends": [],
   "weirdFindOfTheWeek": {
     "title": "Goose",
     "repo": "b-nnett/goose",
     "url": "https://github.com/b-nnett/goose",
     "category": "Unexpected Tools",
-    "whatIsIt": "Goose — это локальный проект для сбора и отображения метрик здоровья с устройств WHOOP 5.0 через приложение на iOS.",
-    "whyInteresting": "Проект Goose привлек внимание не только своей функциональностью, но и неожиданным ростом популярности. За одну неделю он собрал 250 новых звезд, что само по себе вызывает интерес и желание узнать, что именно такого в нем есть. Кажется, что пользователи нашли что-то необычное в этом инструменте, и это создает атмосферу загадки вокруг проекта.\n\nКроме того, его визуальная привлекательность и возможность взаимодействия с устройствами WHOOP делают его не только полезным, но и интригующим. В мире, где технологии развиваются с бешеной скоростью, такие находки как Goose показывают, что всегда есть место для необычного и неожиданного.",
-    "stars": 2528,
-    "weeklyGrowth": 250,
-    "weirdScore": 55.8,
-    "telegramTitle": "Странный GitHub недели: Goose Swift",
-    "telegramPost": "🧩 Странный GitHub недели\n\nНазвание проекта: b-nnett/goose\n\nЧто это:\nGoose — это локальный проект для сбора и отображения метрик здоровья с устройств WHOOP 5.0 через приложение на iOS.\n\nПочему попало в радар:\nПроект Goose привлек внимание своим неожиданным ростом: за неделю он собрал 250 новых звезд. Пользователи, похоже, нашли в нем что-то необычное и интересное.\n\nGitHub:\nhttps://github.com/b-nnett/goose"
+    "shortDescription": "Утилита, после которой остаётся только «серьёзно?».",
+    "stars": 2581,
+    "weeklyGrowth": 0,
+    "weirdScore": 35.4,
+    "telegramTitle": "Странный GitHub недели: goose",
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nb-nnett/goose — Утилита, после которой остаётся только «серьёзно?».\n\nЗа неделю проект получил +0 ⭐ (всего 2 581). Категория: Unexpected Tools. Weird score: 35.4.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/b-nnett/goose"
   }
 }
