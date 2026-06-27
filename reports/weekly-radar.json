@@ -1,17 +1,105 @@
 {
-  "week": "2026-W25",
-  "generatedAt": "2026-06-20T19:09:43.513Z",
-  "trends": [],
+  "week": "2026-W26",
+  "generatedAt": "2026-06-27T19:04:36.524Z",
+  "trends": [
+    {
+      "title": "Рост AI-агентов для разработки",
+      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +41150 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (ponytail, Agent-Reach, hermes-agent, cc-switch), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
+      "category": "ai-agents",
+      "signalStrength": "high",
+      "repos": [
+        {
+          "name": "ponytail",
+          "url": "https://github.com/DietrichGebert/ponytail",
+          "stars": 61564,
+          "starsDelta": 18925
+        },
+        {
+          "name": "Agent-Reach",
+          "url": "https://github.com/Panniantong/Agent-Reach",
+          "stars": 43321,
+          "starsDelta": 7602
+        },
+        {
+          "name": "hermes-agent",
+          "url": "https://github.com/NousResearch/hermes-agent",
+          "stars": 204262,
+          "starsDelta": 6078
+        },
+        {
+          "name": "cc-switch",
+          "url": "https://github.com/farion1231/cc-switch",
+          "stars": 109465,
+          "starsDelta": 4301
+        },
+        {
+          "name": "firecrawl",
+          "url": "https://github.com/firecrawl/firecrawl",
+          "stars": 139964,
+          "starsDelta": 4244
+        }
+      ]
+    },
+    {
+      "title": "Синхронный рост проектов: инструменты разработки",
+      "summary": "Сразу 3 независимых репозиториев в категории «инструменты разработки» показали заметный недельный рост (суммарно +4301 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (ui-ux-pro-max-skill, Void-Tools-v2.0, chinese-buy-us-stock-guide), что указывает на интерес сообщества к направлению «инструменты разработки», а не к одному вирусному репозиторию.",
+      "category": "developer-tools",
+      "signalStrength": "high",
+      "repos": [
+        {
+          "name": "ui-ux-pro-max-skill",
+          "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+          "stars": 97122,
+          "starsDelta": 2833
+        },
+        {
+          "name": "Void-Tools-v2.0",
+          "url": "https://github.com/V0id-v2/Void-Tools-v2.0",
+          "stars": 3324,
+          "starsDelta": 873
+        },
+        {
+          "name": "chinese-buy-us-stock-guide",
+          "url": "https://github.com/zgwl/chinese-buy-us-stock-guide",
+          "stars": 5348,
+          "starsDelta": 595
+        }
+      ]
+    },
+    {
+      "title": "Синхронный рост проектов: компьютерное зрение",
+      "summary": "Несколько проектов в категории «компьютерное зрение» (lottie, aur-malware-check) одновременно набирают популярность (+571 stars за неделю).",
+      "whyTrending": "Одновременный недельный рост у 2 проектов в одной категории — признак формирования направления «компьютерное зрение» среди разработчиков.",
+      "category": "computer-vision",
+      "signalStrength": "medium",
+      "repos": [
+        {
+          "name": "lottie",
+          "url": "https://github.com/diffusionstudio/lottie",
+          "stars": 3878,
+          "starsDelta": 369
+        },
+        {
+          "name": "aur-malware-check",
+          "url": "https://github.com/lenucksi/aur-malware-check",
+          "stars": 1833,
+          "starsDelta": 202
+        }
+      ]
+    }
+  ],
   "weirdFindOfTheWeek": {
-    "title": "Goose",
-    "repo": "b-nnett/goose",
-    "url": "https://github.com/b-nnett/goose",
-    "category": "Unexpected Tools",
-    "shortDescription": "Утилита, после которой остаётся только «серьёзно?».",
-    "stars": 2581,
-    "weeklyGrowth": 0,
-    "weirdScore": 35.4,
-    "telegramTitle": "Странный GitHub недели: goose",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nb-nnett/goose — Утилита, после которой остаётся только «серьёзно?».\n\nЗа неделю проект получил +0 ⭐ (всего 2 581). Категория: Unexpected Tools. Weird score: 35.4.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/b-nnett/goose"
+    "title": "Caveman",
+    "repo": "JuliusBrussee/caveman",
+    "url": "https://github.com/JuliusBrussee/caveman",
+    "category": "Developer Humor",
+    "shortDescription": "Шутка в коде — и почему-то со звёздами на GitHub.",
+    "stars": 77389,
+    "weeklyGrowth": 2287,
+    "weirdScore": 54.9,
+    "telegramTitle": "Странный GitHub недели: caveman",
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +2287 ⭐ (всего 77 389). Категория: Developer Humor. Weird score: 54.9.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
