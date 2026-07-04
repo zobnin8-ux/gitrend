@@ -1,91 +1,70 @@
 {
-  "week": "2026-W26",
-  "generatedAt": "2026-06-27T19:04:36.524Z",
+  "week": "2026-W27",
+  "generatedAt": "2026-07-04T18:56:43.804Z",
   "trends": [
     {
       "title": "Рост AI-агентов для разработки",
-      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +41150 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (ponytail, Agent-Reach, hermes-agent, cc-switch), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
+      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +81151 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (ponytail, Agent-Reach, agency-agents, superpowers), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
       "category": "ai-agents",
       "signalStrength": "high",
       "repos": [
         {
           "name": "ponytail",
           "url": "https://github.com/DietrichGebert/ponytail",
-          "stars": 61564,
-          "starsDelta": 18925
+          "stars": 73777,
+          "starsDelta": 31138
         },
         {
           "name": "Agent-Reach",
           "url": "https://github.com/Panniantong/Agent-Reach",
-          "stars": 43321,
-          "starsDelta": 7602
+          "stars": 50492,
+          "starsDelta": 14773
+        },
+        {
+          "name": "agency-agents",
+          "url": "https://github.com/msitarzewski/agency-agents",
+          "stars": 126970,
+          "starsDelta": 12271
+        },
+        {
+          "name": "superpowers",
+          "url": "https://github.com/obra/superpowers",
+          "stars": 246107,
+          "starsDelta": 12015
         },
         {
           "name": "hermes-agent",
           "url": "https://github.com/NousResearch/hermes-agent",
-          "stars": 204262,
-          "starsDelta": 6078
-        },
-        {
-          "name": "cc-switch",
-          "url": "https://github.com/farion1231/cc-switch",
-          "stars": 109465,
-          "starsDelta": 4301
-        },
-        {
-          "name": "firecrawl",
-          "url": "https://github.com/firecrawl/firecrawl",
-          "stars": 139964,
-          "starsDelta": 4244
+          "stars": 209138,
+          "starsDelta": 10954
         }
       ]
     },
     {
-      "title": "Синхронный рост проектов: инструменты разработки",
-      "summary": "Сразу 3 независимых репозиториев в категории «инструменты разработки» показали заметный недельный рост (суммарно +4301 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (ui-ux-pro-max-skill, Void-Tools-v2.0, chinese-buy-us-stock-guide), что указывает на интерес сообщества к направлению «инструменты разработки», а не к одному вирусному репозиторию.",
-      "category": "developer-tools",
+      "title": "Ускорение проектов вокруг LLM",
+      "summary": "Сразу 3 независимых репозиториев в категории «LLM и языковые модели» показали заметный недельный рост (суммарно +15248 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (caveman, MoneyPrinterTurbo, devspace), что указывает на интерес сообщества к направлению «LLM и языковые модели», а не к одному вирусному репозиторию.",
+      "category": "llm",
       "signalStrength": "high",
       "repos": [
         {
-          "name": "ui-ux-pro-max-skill",
-          "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
-          "stars": 97122,
-          "starsDelta": 2833
+          "name": "caveman",
+          "url": "https://github.com/JuliusBrussee/caveman",
+          "stars": 83766,
+          "starsDelta": 8664
         },
         {
-          "name": "Void-Tools-v2.0",
-          "url": "https://github.com/V0id-v2/Void-Tools-v2.0",
-          "stars": 3324,
-          "starsDelta": 873
+          "name": "MoneyPrinterTurbo",
+          "url": "https://github.com/harry0703/MoneyPrinterTurbo",
+          "stars": 95652,
+          "starsDelta": 5325
         },
         {
-          "name": "chinese-buy-us-stock-guide",
-          "url": "https://github.com/zgwl/chinese-buy-us-stock-guide",
-          "stars": 5348,
-          "starsDelta": 595
-        }
-      ]
-    },
-    {
-      "title": "Синхронный рост проектов: компьютерное зрение",
-      "summary": "Несколько проектов в категории «компьютерное зрение» (lottie, aur-malware-check) одновременно набирают популярность (+571 stars за неделю).",
-      "whyTrending": "Одновременный недельный рост у 2 проектов в одной категории — признак формирования направления «компьютерное зрение» среди разработчиков.",
-      "category": "computer-vision",
-      "signalStrength": "medium",
-      "repos": [
-        {
-          "name": "lottie",
-          "url": "https://github.com/diffusionstudio/lottie",
-          "stars": 3878,
-          "starsDelta": 369
-        },
-        {
-          "name": "aur-malware-check",
-          "url": "https://github.com/lenucksi/aur-malware-check",
-          "stars": 1833,
-          "starsDelta": 202
+          "name": "devspace",
+          "url": "https://github.com/Waishnav/devspace",
+          "stars": 2865,
+          "starsDelta": 1259
         }
       ]
     }
@@ -96,10 +75,10 @@
     "url": "https://github.com/JuliusBrussee/caveman",
     "category": "Developer Humor",
     "shortDescription": "Шутка в коде — и почему-то со звёздами на GitHub.",
-    "stars": 77389,
-    "weeklyGrowth": 2287,
-    "weirdScore": 54.9,
+    "stars": 83766,
+    "weeklyGrowth": 8664,
+    "weirdScore": 55.4,
     "telegramTitle": "Странный GitHub недели: caveman",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +2287 ⭐ (всего 77 389). Категория: Developer Humor. Weird score: 54.9.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +8664 ⭐ (всего 83 766). Категория: Developer Humor. Weird score: 55.4.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
