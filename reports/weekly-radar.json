@@ -1,90 +1,17 @@
 {
-  "week": "2026-W29",
-  "generatedAt": "2026-07-18T18:46:27.253Z",
-  "trends": [
-    {
-      "title": "Рост AI-агентов для разработки",
-      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +124644 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (ponytail, superpowers, Agent-Reach, hermes-agent), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
-      "category": "ai-agents",
-      "signalStrength": "high",
-      "repos": [
-        {
-          "name": "ponytail",
-          "url": "https://github.com/DietrichGebert/ponytail",
-          "stars": 85521,
-          "starsDelta": 42882
-        },
-        {
-          "name": "superpowers",
-          "url": "https://github.com/obra/superpowers",
-          "stars": 257010,
-          "starsDelta": 22918
-        },
-        {
-          "name": "Agent-Reach",
-          "url": "https://github.com/Panniantong/Agent-Reach",
-          "stars": 57714,
-          "starsDelta": 21995
-        },
-        {
-          "name": "hermes-agent",
-          "url": "https://github.com/NousResearch/hermes-agent",
-          "stars": 216781,
-          "starsDelta": 18597
-        },
-        {
-          "name": "agency-agents",
-          "url": "https://github.com/msitarzewski/agency-agents",
-          "stars": 132951,
-          "starsDelta": 18252
-        }
-      ]
-    },
-    {
-      "title": "Ускорение проектов вокруг LLM",
-      "summary": "Сразу 4 независимых репозиториев в категории «LLM и языковые модели» показали заметный недельный рост (суммарно +17615 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (MoneyPrinterTurbo, crawl4ai, vllm, PaddleOCR), что указывает на интерес сообщества к направлению «LLM и языковые модели», а не к одному вирусному репозиторию.",
-      "category": "llm",
-      "signalStrength": "high",
-      "repos": [
-        {
-          "name": "MoneyPrinterTurbo",
-          "url": "https://github.com/harry0703/MoneyPrinterTurbo",
-          "stars": 97993,
-          "starsDelta": 7666
-        },
-        {
-          "name": "crawl4ai",
-          "url": "https://github.com/unclecode/crawl4ai",
-          "stars": 73176,
-          "starsDelta": 4176
-        },
-        {
-          "name": "vllm",
-          "url": "https://github.com/vllm-project/vllm",
-          "stars": 86573,
-          "starsDelta": 3152
-        },
-        {
-          "name": "PaddleOCR",
-          "url": "https://github.com/PaddlePaddle/PaddleOCR",
-          "stars": 85755,
-          "starsDelta": 2621
-        }
-      ]
-    }
-  ],
+  "week": "2026-W30",
+  "generatedAt": "2026-07-25T18:52:57.700Z",
+  "trends": [],
   "weirdFindOfTheWeek": {
     "title": "Caveman",
     "repo": "JuliusBrussee/caveman",
     "url": "https://github.com/JuliusBrussee/caveman",
     "category": "Developer Humor",
     "shortDescription": "Шутка в коде — и почему-то со звёздами на GitHub.",
-    "stars": 90521,
-    "weeklyGrowth": 15419,
-    "weirdScore": 56,
+    "stars": 92943,
+    "weeklyGrowth": 0,
+    "weirdScore": 33.8,
     "telegramTitle": "Странный GitHub недели: caveman",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +15419 ⭐ (всего 90 521). Категория: Developer Humor. Weird score: 56.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +0 ⭐ (всего 92 943). Категория: Developer Humor. Weird score: 33.8.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
