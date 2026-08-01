@@ -1,6 +1,6 @@
 {
-  "week": "2026-W30",
-  "generatedAt": "2026-07-25T18:52:57.700Z",
+  "week": "2026-W31",
+  "generatedAt": "2026-08-01T18:54:38.601Z",
   "trends": [],
   "weirdFindOfTheWeek": {
     "title": "Caveman",
@@ -8,10 +8,10 @@
     "url": "https://github.com/JuliusBrussee/caveman",
     "category": "Developer Humor",
     "shortDescription": "Шутка в коде — и почему-то со звёздами на GitHub.",
-    "stars": 92943,
+    "stars": 95070,
     "weeklyGrowth": 0,
     "weirdScore": 33.8,
     "telegramTitle": "Странный GitHub недели: caveman",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +0 ⭐ (всего 92 943). Категория: Developer Humor. Weird score: 33.8.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +0 ⭐ (всего 95 070). Категория: Developer Humor. Weird score: 33.8.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
