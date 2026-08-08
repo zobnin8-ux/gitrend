@@ -1,17 +1,78 @@
 {
-  "week": "2026-W31",
-  "generatedAt": "2026-08-01T18:54:38.601Z",
-  "trends": [],
+  "week": "2026-W32",
+  "generatedAt": "2026-08-08T18:22:13.604Z",
+  "trends": [
+    {
+      "title": "Рост AI-агентов для разработки",
+      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +33226 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (skills, qm, ponytail, Agent-Reach), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
+      "category": "ai-agents",
+      "signalStrength": "high",
+      "repos": [
+        {
+          "name": "skills",
+          "url": "https://github.com/mattpocock/skills",
+          "stars": 209784,
+          "starsDelta": 10999
+        },
+        {
+          "name": "qm",
+          "url": "https://github.com/yc-software/qm",
+          "stars": 12494,
+          "starsDelta": 7974
+        },
+        {
+          "name": "ponytail",
+          "url": "https://github.com/DietrichGebert/ponytail",
+          "stars": 98719,
+          "starsDelta": 5279
+        },
+        {
+          "name": "Agent-Reach",
+          "url": "https://github.com/Panniantong/Agent-Reach",
+          "stars": 68693,
+          "starsDelta": 4848
+        },
+        {
+          "name": "graphify",
+          "url": "https://github.com/Graphify-Labs/graphify",
+          "stars": 104283,
+          "starsDelta": 4126
+        }
+      ]
+    },
+    {
+      "title": "Ускорение проектов вокруг LLM",
+      "summary": "Несколько проектов в категории «LLM и языковые модели» (turbo-fieldfare, gpt-5.6-instruct) одновременно набирают популярность (+2723 stars за неделю).",
+      "whyTrending": "Одновременный недельный рост у 2 проектов в одной категории — признак формирования направления «LLM и языковые модели» среди разработчиков.",
+      "category": "llm",
+      "signalStrength": "medium",
+      "repos": [
+        {
+          "name": "turbo-fieldfare",
+          "url": "https://github.com/drumih/turbo-fieldfare",
+          "stars": 5420,
+          "starsDelta": 1884
+        },
+        {
+          "name": "gpt-5.6-instruct",
+          "url": "https://github.com/MDX-Tom/gpt-5.6-instruct",
+          "stars": 5010,
+          "starsDelta": 839
+        }
+      ]
+    }
+  ],
   "weirdFindOfTheWeek": {
     "title": "Caveman",
     "repo": "JuliusBrussee/caveman",
     "url": "https://github.com/JuliusBrussee/caveman",
     "category": "Developer Humor",
     "shortDescription": "Шутка в коде — и почему-то со звёздами на GitHub.",
-    "stars": 95070,
-    "weeklyGrowth": 0,
-    "weirdScore": 33.8,
+    "stars": 96855,
+    "weeklyGrowth": 1785,
+    "weirdScore": 54.9,
     "telegramTitle": "Странный GitHub недели: caveman",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +0 ⭐ (всего 95 070). Категория: Developer Humor. Weird score: 33.8.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +1785 ⭐ (всего 96 855). Категория: Developer Humor. Weird score: 54.9.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
