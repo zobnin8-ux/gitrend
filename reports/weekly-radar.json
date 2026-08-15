@@ -1,64 +1,76 @@
 {
-  "week": "2026-W32",
-  "generatedAt": "2026-08-08T18:22:13.604Z",
+  "week": "2026-W33",
+  "generatedAt": "2026-08-15T18:14:19.675Z",
   "trends": [
     {
       "title": "Рост AI-агентов для разработки",
-      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +33226 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (skills, qm, ponytail, Agent-Reach), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
+      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +55986 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (skills, ponytail, qm, pi), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
       "category": "ai-agents",
       "signalStrength": "high",
       "repos": [
         {
           "name": "skills",
           "url": "https://github.com/mattpocock/skills",
-          "stars": 209784,
-          "starsDelta": 10999
-        },
-        {
-          "name": "qm",
-          "url": "https://github.com/yc-software/qm",
-          "stars": 12494,
-          "starsDelta": 7974
+          "stars": 218239,
+          "starsDelta": 19454
         },
         {
           "name": "ponytail",
           "url": "https://github.com/DietrichGebert/ponytail",
-          "stars": 98719,
-          "starsDelta": 5279
+          "stars": 103213,
+          "starsDelta": 9773
         },
         {
-          "name": "Agent-Reach",
-          "url": "https://github.com/Panniantong/Agent-Reach",
-          "stars": 68693,
-          "starsDelta": 4848
+          "name": "qm",
+          "url": "https://github.com/yc-software/qm",
+          "stars": 13612,
+          "starsDelta": 9092
         },
         {
-          "name": "graphify",
-          "url": "https://github.com/Graphify-Labs/graphify",
-          "stars": 104283,
-          "starsDelta": 4126
+          "name": "pi",
+          "url": "https://github.com/earendil-works/pi",
+          "stars": 90849,
+          "starsDelta": 8954
+        },
+        {
+          "name": "firecrawl",
+          "url": "https://github.com/firecrawl/firecrawl",
+          "stars": 167726,
+          "starsDelta": 8713
         }
       ]
     },
     {
       "title": "Ускорение проектов вокруг LLM",
-      "summary": "Несколько проектов в категории «LLM и языковые модели» (turbo-fieldfare, gpt-5.6-instruct) одновременно набирают популярность (+2723 stars за неделю).",
-      "whyTrending": "Одновременный недельный рост у 2 проектов в одной категории — признак формирования направления «LLM и языковые модели» среди разработчиков.",
+      "summary": "Сразу 4 независимых репозиториев в категории «LLM и языковые модели» показали заметный недельный рост (суммарно +11892 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (generative-ai-for-beginners, caveman, turbo-fieldfare, crawl4ai), что указывает на интерес сообщества к направлению «LLM и языковые модели», а не к одному вирусному репозиторию.",
       "category": "llm",
-      "signalStrength": "medium",
+      "signalStrength": "high",
       "repos": [
+        {
+          "name": "generative-ai-for-beginners",
+          "url": "https://github.com/microsoft/generative-ai-for-beginners",
+          "stars": 117793,
+          "starsDelta": 3680
+        },
+        {
+          "name": "caveman",
+          "url": "https://github.com/JuliusBrussee/caveman",
+          "stars": 98362,
+          "starsDelta": 3292
+        },
         {
           "name": "turbo-fieldfare",
           "url": "https://github.com/drumih/turbo-fieldfare",
-          "stars": 5420,
-          "starsDelta": 1884
+          "stars": 6015,
+          "starsDelta": 2479
         },
         {
-          "name": "gpt-5.6-instruct",
-          "url": "https://github.com/MDX-Tom/gpt-5.6-instruct",
-          "stars": 5010,
-          "starsDelta": 839
+          "name": "crawl4ai",
+          "url": "https://github.com/unclecode/crawl4ai",
+          "stars": 78214,
+          "starsDelta": 2441
         }
       ]
     }
@@ -69,10 +81,10 @@
     "url": "https://github.com/JuliusBrussee/caveman",
     "category": "Developer Humor",
     "shortDescription": "Шутка в коде — и почему-то со звёздами на GitHub.",
-    "stars": 96855,
-    "weeklyGrowth": 1785,
-    "weirdScore": 54.9,
+    "stars": 98362,
+    "weeklyGrowth": 3292,
+    "weirdScore": 55,
     "telegramTitle": "Странный GitHub недели: caveman",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +1785 ⭐ (всего 96 855). Категория: Developer Humor. Weird score: 54.9.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +3292 ⭐ (всего 98 362). Категория: Developer Humor. Weird score: 55.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
