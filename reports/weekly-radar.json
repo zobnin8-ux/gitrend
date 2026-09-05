@@ -1,17 +1,57 @@
 {
-  "week": "2026-W35",
-  "generatedAt": "2026-08-29T20:10:01.847Z",
-  "trends": [],
+  "week": "2026-W36",
+  "generatedAt": "2026-09-05T19:42:45.712Z",
+  "trends": [
+    {
+      "title": "Рост AI-агентов для разработки",
+      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +37168 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (ponytail, skills, deepseek-harness, pi), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
+      "category": "ai-agents",
+      "signalStrength": "high",
+      "repos": [
+        {
+          "name": "ponytail",
+          "url": "https://github.com/DietrichGebert/ponytail",
+          "stars": 127701,
+          "starsDelta": 11375
+        },
+        {
+          "name": "skills",
+          "url": "https://github.com/mattpocock/skills",
+          "stars": 252238,
+          "starsDelta": 11337
+        },
+        {
+          "name": "deepseek-harness",
+          "url": "https://github.com/deepseek-ai/deepseek-harness",
+          "stars": 213060,
+          "starsDelta": 9777
+        },
+        {
+          "name": "pi",
+          "url": "https://github.com/earendil-works/pi",
+          "stars": 102098,
+          "starsDelta": 3043
+        },
+        {
+          "name": "codex-with-chatgpt",
+          "url": "https://github.com/XiaoDuoYa/codex-with-chatgpt",
+          "stars": 2520,
+          "starsDelta": 1636
+        }
+      ]
+    }
+  ],
   "weirdFindOfTheWeek": {
     "title": "Caveman",
     "repo": "JuliusBrussee/caveman",
     "url": "https://github.com/JuliusBrussee/caveman",
     "category": "Developer Humor",
     "shortDescription": "Шутка в коде — и почему-то со звёздами на GitHub.",
-    "stars": 101746,
-    "weeklyGrowth": 0,
-    "weirdScore": 33.8,
+    "stars": 103783,
+    "weeklyGrowth": 2037,
+    "weirdScore": 54.9,
     "telegramTitle": "Странный GitHub недели: caveman",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +0 ⭐ (всего 101 746). Категория: Developer Humor. Weird score: 33.8.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — Шутка в коде — и почему-то со звёздами на GitHub.\n\nЗа неделю проект получил +2037 ⭐ (всего 103 783). Категория: Developer Humor. Weird score: 54.9.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
