@@ -1,43 +1,64 @@
 {
-  "week": "2026-W38",
-  "generatedAt": "2026-09-19T19:46:00.699Z",
+  "week": "2026-W39",
+  "generatedAt": "2026-09-26T20:22:15.347Z",
   "trends": [
     {
       "title": "Рост AI-агентов для разработки",
-      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +31312 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (deepseek-harness, archify, ponytail, i-have-adhd), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
+      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +58568 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (deepseek-harness, archify, ECC, ponytail), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
       "category": "ai-agents",
       "signalStrength": "high",
       "repos": [
         {
           "name": "deepseek-harness",
           "url": "https://github.com/deepseek-ai/deepseek-harness",
-          "stars": 229953,
-          "starsDelta": 8433
+          "stars": 236785,
+          "starsDelta": 15265
         },
         {
           "name": "archify",
           "url": "https://github.com/tt-a1i/archify",
-          "stars": 67355,
-          "starsDelta": 7859
+          "stars": 72198,
+          "starsDelta": 12702
+        },
+        {
+          "name": "ECC",
+          "url": "https://github.com/affaan-m/ECC",
+          "stars": 267878,
+          "starsDelta": 10894
         },
         {
           "name": "ponytail",
           "url": "https://github.com/DietrichGebert/ponytail",
-          "stars": 142466,
-          "starsDelta": 5956
+          "stars": 146414,
+          "starsDelta": 9904
         },
         {
-          "name": "i-have-adhd",
-          "url": "https://github.com/ayghri/i-have-adhd",
-          "stars": 48620,
-          "starsDelta": 5354
+          "name": "skills",
+          "url": "https://github.com/mattpocock/skills",
+          "stars": 270194,
+          "starsDelta": 9803
+        }
+      ]
+    },
+    {
+      "title": "Рост экосистемы MCP",
+      "summary": "Несколько проектов в категории «Model Context Protocol (MCP)» (Scrapling, codebase-memory-mcp) одновременно набирают популярность (+5314 stars за неделю).",
+      "whyTrending": "Одновременный недельный рост у 2 проектов в одной категории — признак формирования направления «Model Context Protocol (MCP)» среди разработчиков.",
+      "category": "mcp",
+      "signalStrength": "medium",
+      "repos": [
+        {
+          "name": "Scrapling",
+          "url": "https://github.com/D4Vinci/Scrapling",
+          "stars": 83870,
+          "starsDelta": 3371
         },
         {
-          "name": "Agent-Reach",
-          "url": "https://github.com/Panniantong/Agent-Reach",
-          "stars": 83406,
-          "starsDelta": 3710
+          "name": "codebase-memory-mcp",
+          "url": "https://github.com/DeusData/codebase-memory-mcp",
+          "stars": 44981,
+          "starsDelta": 1943
         }
       ]
     }
@@ -48,10 +69,10 @@
     "url": "https://github.com/JuliusBrussee/caveman",
     "category": "Developer Humor",
     "shortDescription": "AI-помощник, который пытается выполнять задачи без участия человека.",
-    "stars": 106760,
-    "weeklyGrowth": 1541,
-    "weirdScore": 54.8,
+    "stars": 107943,
+    "weeklyGrowth": 2724,
+    "weirdScore": 54.9,
     "telegramTitle": "Странный GitHub недели: caveman",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — AI-помощник, который пытается выполнять задачи без участия человека.\n\nЗа неделю проект получил +1541 ⭐ (всего 106 760). Категория: Developer Humor. Weird score: 54.8.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — AI-помощник, который пытается выполнять задачи без участия человека.\n\nЗа неделю проект получил +2724 ⭐ (всего 107 943). Категория: Developer Humor. Weird score: 54.9.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
