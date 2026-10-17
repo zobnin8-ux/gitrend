@@ -1,49 +1,49 @@
 {
-  "week": "2026-W41",
-  "generatedAt": "2026-10-10T20:52:23.915Z",
+  "week": "2026-W42",
+  "generatedAt": "2026-10-17T19:51:00.723Z",
   "trends": [
     {
       "title": "Рост AI-агентов для разработки",
-      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +114768 stars).",
-      "whyTrending": "Рост распределён между несколькими проектами (deepseek-harness, skills, ponytail, archify), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
+      "summary": "Сразу 5 независимых репозиториев в категории «AI-агенты» показали заметный недельный рост (суммарно +145276 stars).",
+      "whyTrending": "Рост распределён между несколькими проектами (skills, deepseek-harness, ponytail, ECC), что указывает на интерес сообщества к направлению «AI-агенты», а не к одному вирусному репозиторию.",
       "category": "ai-agents",
       "signalStrength": "high",
       "repos": [
         {
-          "name": "deepseek-harness",
-          "url": "https://github.com/deepseek-ai/deepseek-harness",
-          "stars": 246972,
-          "starsDelta": 25452
-        },
-        {
           "name": "skills",
           "url": "https://github.com/mattpocock/skills",
-          "stars": 284272,
-          "starsDelta": 23881
+          "stars": 294946,
+          "starsDelta": 34555
+        },
+        {
+          "name": "deepseek-harness",
+          "url": "https://github.com/deepseek-ai/deepseek-harness",
+          "stars": 252065,
+          "starsDelta": 30545
         },
         {
           "name": "ponytail",
           "url": "https://github.com/DietrichGebert/ponytail",
-          "stars": 160370,
-          "starsDelta": 23860
-        },
-        {
-          "name": "archify",
-          "url": "https://github.com/tt-a1i/archify",
-          "stars": 81628,
-          "starsDelta": 22132
+          "stars": 166062,
+          "starsDelta": 29552
         },
         {
           "name": "ECC",
           "url": "https://github.com/affaan-m/ECC",
-          "stars": 276427,
-          "starsDelta": 19443
+          "stars": 282301,
+          "starsDelta": 25317
+        },
+        {
+          "name": "archify",
+          "url": "https://github.com/tt-a1i/archify",
+          "stars": 84803,
+          "starsDelta": 25307
         }
       ]
     },
     {
       "title": "Рост экосистемы MCP",
-      "summary": "Несколько проектов в категории «Model Context Protocol (MCP)» (Scrapling, codebase-memory-mcp) одновременно набирают популярность (+9444 stars за неделю).",
+      "summary": "Несколько проектов в категории «Model Context Protocol (MCP)» (Scrapling, codebase-memory-mcp) одновременно набирают популярность (+11503 stars за неделю).",
       "whyTrending": "Одновременный недельный рост у 2 проектов в одной категории — признак формирования направления «Model Context Protocol (MCP)» среди разработчиков.",
       "category": "mcp",
       "signalStrength": "medium",
@@ -51,14 +51,35 @@
         {
           "name": "Scrapling",
           "url": "https://github.com/D4Vinci/Scrapling",
-          "stars": 86680,
-          "starsDelta": 6181
+          "stars": 88275,
+          "starsDelta": 7776
         },
         {
           "name": "codebase-memory-mcp",
           "url": "https://github.com/DeusData/codebase-memory-mcp",
-          "stars": 46301,
-          "starsDelta": 3263
+          "stars": 46765,
+          "starsDelta": 3727
+        }
+      ]
+    },
+    {
+      "title": "Синхронный рост проектов: автоматизация",
+      "summary": "Несколько проектов в категории «автоматизация» (hyperswitch, browser) одновременно набирают популярность (+3069 stars за неделю).",
+      "whyTrending": "Одновременный недельный рост у 2 проектов в одной категории — признак формирования направления «автоматизация» среди разработчиков.",
+      "category": "automation",
+      "signalStrength": "medium",
+      "repos": [
+        {
+          "name": "hyperswitch",
+          "url": "https://github.com/juspay/hyperswitch",
+          "stars": 45337,
+          "starsDelta": 1738
+        },
+        {
+          "name": "browser",
+          "url": "https://github.com/lightpanda-io/browser",
+          "stars": 36634,
+          "starsDelta": 1331
         }
       ]
     }
@@ -69,10 +90,10 @@
     "url": "https://github.com/JuliusBrussee/caveman",
     "category": "Developer Humor",
     "shortDescription": "AI-помощник, который пытается выполнять задачи без участия человека.",
-    "stars": 110916,
-    "weeklyGrowth": 5697,
-    "weirdScore": 55.1,
+    "stars": 113255,
+    "weeklyGrowth": 8036,
+    "weirdScore": 55.2,
     "telegramTitle": "Странный GitHub недели: caveman",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — AI-помощник, который пытается выполнять задачи без участия человека.\n\nЗа неделю проект получил +5697 ⭐ (всего 110 916). Категория: Developer Humor. Weird score: 55.1.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — AI-помощник, который пытается выполнять задачи без участия человека.\n\nЗа неделю проект получил +8036 ⭐ (всего 113 255). Категория: Developer Humor. Weird score: 55.2.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
