@@ -1,6 +1,6 @@
 {
-  "week": "2026-W44",
-  "generatedAt": "2026-10-31T20:47:19.866Z",
+  "week": "2026-W45",
+  "generatedAt": "2026-11-07T21:13:54.511Z",
   "trends": [],
   "weirdFindOfTheWeek": {
     "title": "Caveman",
@@ -8,10 +8,10 @@
     "url": "https://github.com/JuliusBrussee/caveman",
     "category": "Developer Humor",
     "shortDescription": "AI-помощник, который пытается выполнять задачи без участия человека.",
-    "stars": 116507,
+    "stars": 118156,
     "weeklyGrowth": 0,
     "weirdScore": 33.8,
     "telegramTitle": "Странный GitHub недели: caveman",
-    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — AI-помощник, который пытается выполнять задачи без участия человека.\n\nЗа неделю проект получил +0 ⭐ (всего 116 507). Категория: Developer Humor. Weird score: 33.8.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
+    "telegramPost": "На этой неделе в GitHub обнаружилась крайне странная штука.\n\nJuliusBrussee/caveman — AI-помощник, который пытается выполнять задачи без участия человека.\n\nЗа неделю проект получил +0 ⭐ (всего 118 156). Категория: Developer Humor. Weird score: 33.8.\n\nПохоже, разработчики снова доказали, что интернет любит странные идеи сильнее, чем полезные утилиты.\n\nGitHub: https://github.com/JuliusBrussee/caveman"
   }
 }
